@@ -31,8 +31,8 @@ export class ShimResponse {
     this.body = JSON.stringify(data);
     return this;
   }
-  send(data: BodyInit) {
-    this.body = data;
+  send(data: any) {
+    this.body = data as BodyInit;
     return this;
   }
   redirect(url: string) {
