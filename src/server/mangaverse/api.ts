@@ -1083,9 +1083,7 @@ function resolveMangaDexUuids(id: string, title?: string): string[] {
 }
 
 const app = new ShimApp();
-  const PORT = parseInt(process.env.PORT || '3000', 10);
 
-  app.use(express.json());
 
   // === AUTH & ADMIN SYSTEM ===
   app.post('/api/auth/admin-login', (req, res) => {
