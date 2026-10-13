@@ -1116,7 +1116,7 @@ const app = new ShimApp();
   });
 
   app.get('/api/auth/verify', (req, res) => {
-    const authHeader = req.headers.authorization || '';
+    const authHeader = req.headers.get('authorization') || '';
     const token = authHeader.replace(/^Bearer\s+/, '') || (req.query.token as string);
     const email = (req.query.email as string) || '';
 
@@ -2354,7 +2354,7 @@ const app = new ShimApp();
   });
 
   // In-memory Buffer Cache for ultra-fast reader page serving
-  const IMAGE_BUFFER_CACHE = new Map<string, { buffer: Buffer; contentType: string; timestamp: number }>();
+  const IMAGE_BUFFER_CACHE = new Map<string, { buffer: Uint8Array; contentType: string; timestamp: number }>();
 
   // 6. Image Proxy with full referer, buffer caching and user-agent support
   app.get('/api/proxy-image', async (req, res) => {
