@@ -513,6 +513,18 @@ export const AdminModal: React.FC<AdminModalProps> = ({
             <Heart className="w-4 h-4 text-pink-400" />
             <span>Doações & Pix</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('gaps')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all whitespace-nowrap ${
+              activeTab === 'gaps'
+                ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30'
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-850'
+            }`}
+          >
+            <AlertCircle className="w-4 h-4" />
+            <span>Lacunas</span>
+          </button>
         </div>
 
         {/* Feedback Toast */}
