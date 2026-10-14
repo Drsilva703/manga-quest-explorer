@@ -221,7 +221,7 @@ export default function App() {
       />
 
       {/* Main View Area */}
-      <main className="flex-1 w-full pb-14 md:pb-0">
+      <main className="flex-1 w-full pb-16 xl:pb-0">
         {selectedManga ? (
           <DetailsView
             manga={selectedManga}

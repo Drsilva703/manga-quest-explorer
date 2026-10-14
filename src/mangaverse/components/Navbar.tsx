@@ -63,7 +63,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 shrink-0 py-1">
+          <nav className="hidden xl:flex items-center gap-1 shrink-0 py-1">
             <button
               onClick={() => onSelectTab('home')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
@@ -125,9 +125,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
 
           {/* Search bar & Actions */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 justify-end min-w-0">
+          <div className="flex items-center gap-1 sm:gap-2 shrink min-w-0 justify-end">
             {/* Quick search input */}
-            <div className="relative w-[115px] xs:w-[135px] sm:w-[180px] md:w-[210px] shrink-0">
+            <div className="relative w-[92px] sm:w-[160px] 2xl:w-[210px] shrink-0">
               <Search className="w-3 h-3 sm:w-3.5 sm:h-3.5 absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
               <input
                 type="text"
@@ -147,7 +147,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="Painel de Administração MangaVerse"
               >
                 <Shield className="w-3.5 h-3.5 text-amber-400" />
-                <span className="hidden sm:inline">Painel ADM</span>
+                <span className="hidden 2xl:inline">Painel ADM</span>
               </button>
             ) : (
               <button
@@ -196,7 +196,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 text-pink-300 border border-pink-500/20 text-xs font-medium transition-all flex items-center gap-1.5 shrink-0"
             >
               <Heart className="w-3.5 h-3.5 fill-pink-400/40 text-pink-400" />
-              <span className="hidden sm:inline">Apoiar</span>
+              <span className="hidden 2xl:inline">Apoiar</span>
             </button>
 
             {/* Configurações */}
@@ -212,7 +212,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       </header>
 
       {/* Mobile Bottom Navigation Bar - Standard app navigation */}
-      <nav aria-label="Navegação mobile" className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-800/80 px-2 py-1 flex items-center justify-around shadow-2xl safe-area-bottom">
+      <nav aria-label="Navegação mobile" className="xl:hidden fixed bottom-0 left-0 right-0 z-50 bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-800/80 px-2 py-1 flex items-center justify-around shadow-2xl safe-area-bottom">
         <button
           onClick={() => onSelectTab('home')}
           className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-lg transition-colors ${
