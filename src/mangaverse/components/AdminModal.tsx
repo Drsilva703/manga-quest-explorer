@@ -63,7 +63,15 @@ interface AdminModalProps {
   onMangaSelected?: (manga: MangaItem) => void;
 }
 
-type TabType = 'overview' | 'mangas' | 'chapters' | 'chat' | 'comments' | 'pix';
+type TabType = 'overview' | 'mangas' | 'chapters' | 'gaps' | 'chat' | 'comments' | 'pix';
+
+interface GapsAnalysis {
+  mangaId: string;
+  mangaTitle: string;
+  total: number;
+  realCount: number;
+  missingNumbers: string[];
+}
 
 export const AdminModal: React.FC<AdminModalProps> = ({
   isOpen,
@@ -139,6 +147,41 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
+  };
+
+  // Missing chapters (lacunas) state
+  const [gapsMangaId, setGapsMangaId] = useState<string>('one-piece');
+  const [gapsLoading, setGapsLoading] = useState(false);
+  const [gapsResult, setGapsResult] = useState<GapsAnalysis | null>(null);
+
+  const analyzeGaps = async () => {
+    const manga = allAvailableMangas.find((m) => m.id === gapsMangaId);
+    const title = manga?.title || gapsMangaId;
+    setGapsLoading(true);
+    setGapsResult(null);
+    try {
+      const res = await fetch(
+        `/api/manga/chapters?id=${encodeURIComponent(gapsMangaId)}&mangaTitle=${encodeURIComponent(title)}&lang=pt-br`
+      );
+      if (!res.ok) throw new Error('Falha ao buscar capítulos');
+      const list: { id: string; chapterNumber: string }[] = await res.json();
+      // Capítulos gerados automaticamente (sem conteúdo real) têm id iniciando com "gen-"
+      const missing = list
+        .filter((c) => c.id.startsWith('gen-'))
+        .map((c) => c.chapterNumber)
+        .sort((a, b) => (parseFloat(a) || 0) - (parseFloat(b) || 0));
+      setGapsResult({
+        mangaId: gapsMangaId,
+        mangaTitle: title,
+        total: list.length,
+        realCount: list.length - missing.length,
+        missingNumbers: missing
+      });
+    } catch {
+      showToast('Não foi possível analisar as lacunas desta obra.');
+    } finally {
+      setGapsLoading(false);
+    }
   };
 
   const loadAllData = async () => {
