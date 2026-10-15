@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiSplatRouteImport } from './routes/api/$'
+import { Route as ApiUploadPageRouteImport } from './routes/api/upload-page'
+import { Route as ApiPagesSplatRouteImport } from './routes/api/pages/$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +24,49 @@ const ApiSplatRoute = ApiSplatRouteImport.update({
   path: '/api/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiUploadPageRoute = ApiUploadPageRouteImport.update({
+  id: '/api/upload-page',
+  path: '/api/upload-page',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPagesSplatRoute = ApiPagesSplatRouteImport.update({
+  id: '/api/pages/$',
+  path: '/api/pages/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/$': typeof ApiSplatRoute
+  '/api/upload-page': typeof ApiUploadPageRoute
+  '/api/pages/$': typeof ApiPagesSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/$': typeof ApiSplatRoute
+  '/api/upload-page': typeof ApiUploadPageRoute
+  '/api/pages/$': typeof ApiPagesSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api/$': typeof ApiSplatRoute
+  '/api/upload-page': typeof ApiUploadPageRoute
+  '/api/pages/$': typeof ApiPagesSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/$'
+  fullPaths: '/' | '/api/$' | '/api/upload-page' | '/api/pages/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/$'
-  id: '__root__' | '/' | '/api/$'
+  to: '/' | '/api/$' | '/api/upload-page' | '/api/pages/$'
+  id: '__root__' | '/' | '/api/$' | '/api/upload-page' | '/api/pages/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiSplatRoute: typeof ApiSplatRoute
+  ApiUploadPageRoute: typeof ApiUploadPageRoute
+  ApiPagesSplatRoute: typeof ApiPagesSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +85,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/upload-page': {
+      id: '/api/upload-page'
+      path: '/api/upload-page'
+      fullPath: '/api/upload-page'
+      preLoaderRoute: typeof ApiUploadPageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/pages/$': {
+      id: '/api/pages/$'
+      path: '/api/pages/$'
+      fullPath: '/api/pages/$'
+      preLoaderRoute: typeof ApiPagesSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiSplatRoute: ApiSplatRoute,
+  ApiUploadPageRoute: ApiUploadPageRoute,
+  ApiPagesSplatRoute: ApiPagesSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

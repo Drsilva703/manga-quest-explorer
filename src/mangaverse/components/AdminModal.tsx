@@ -296,6 +296,55 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     }
   };
 
+  // ZIP / CBZ upload
+  const [zipStatus, setZipStatus] = useState({ busy: false, done: 0, total: 0, message: '' });
+  const handleZipUpload = async (file: File) => {
+    try {
+      setZipStatus({ busy: true, done: 0, total: 0, message: 'Abrindo arquivo…' });
+      let chNum = chapterForm.chapterNumber.trim();
+      if (!chNum) {
+        const base = file.name.replace(/\.(zip|cbz)$/i, '');
+        const m = base.match(/(?:cap(?:itulo)?|ch(?:apter)?|c)[\s._-]*(\d+(?:\.\d+)?)/i) || base.match(/(\d+(?:\.\d+)?)(?!.*\d)/);
+        chNum = m ? m[1] : '';
+      }
+      if (!chNum) {
+        setZipStatus({ busy: false, done: 0, total: 0, message: 'Informe o número do capítulo antes de enviar.' });
+        return;
+      }
+      const JSZip = (await import('jszip')).default;
+      const zip = await JSZip.loadAsync(file);
+      const entries = Object.values(zip.files)
+        .filter((f) => !f.dir && /\.(jpe?g|png|webp|gif|avif)$/i.test(f.name) && !/(^|\/)(__MACOSX|\.)/.test(f.name))
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+      if (entries.length === 0) {
+        setZipStatus({ busy: false, done: 0, total: 0, message: 'Nenhuma imagem encontrada no arquivo.' });
+        return;
+      }
+      const urls: string[] = [];
+      const stamp = Date.now();
+      for (let i = 0; i < entries.length; i++) {
+        setZipStatus({ busy: true, done: i, total: entries.length, message: `Enviando página ${i + 1} de ${entries.length}…` });
+        const ent = entries[i];
+        const ext = (ent.name.split('.').pop() || 'jpg').toLowerCase();
+        const mime = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : `image/${ext}`;
+        const data = await ent.async('uint8array');
+        const name = `${stamp}-${String(i + 1).padStart(3, '0')}.${ext}`;
+        const res = await fetch(`/api/upload-page?mangaId=${encodeURIComponent(selectedMangaId)}&chapter=${encodeURIComponent(chNum)}&name=${encodeURIComponent(name)}`, {
+          method: 'POST',
+          headers: { 'content-type': mime },
+          body: data,
+        });
+        const json = await res.json();
+        if (!res.ok || !json.url) throw new Error(json.error || 'Falha no envio');
+        urls.push(json.url);
+      }
+      setChapterForm((prev) => ({ ...prev, chapterNumber: prev.chapterNumber || chNum, pagesText: urls.join('\n') }));
+      setZipStatus({ busy: false, done: entries.length, total: entries.length, message: `${entries.length} páginas enviadas! Agora clique em salvar.` });
+    } catch (err: any) {
+      setZipStatus({ busy: false, done: 0, total: 0, message: `Erro: ${err?.message || 'não foi possível ler o arquivo'}` });
+    }
+  };
+
   // Chapter actions
   const handleSaveChapter = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -989,24 +1038,37 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     </div>
 
                     <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="block text-xs font-medium text-zinc-300">
-                          URLs das Imagens / Páginas (uma por linha)
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const total = 16;
-                            const generated = Array.from({ length: total }, (_, i) =>
-                              `/api/manga/page-canvas?mangaId=${encodeURIComponent(selectedMangaId)}&chapterNumber=${encodeURIComponent(chapterForm.chapterNumber || '1')}&page=${i + 1}&totalPages=${total}&title=${encodeURIComponent(selectedMangaId)}`
-                            ).join('\n');
-                            setChapterForm({ ...chapterForm, pagesText: generated });
+                      <label className="block text-xs font-medium text-zinc-300 mb-1">
+                        Enviar arquivo do capítulo (.zip ou .cbz)
+                      </label>
+                      <label className={`flex flex-col items-center justify-center gap-1 w-full px-3 py-5 rounded-xl border-2 border-dashed text-center cursor-pointer transition ${zipStatus.busy ? 'border-indigo-500 bg-indigo-500/10' : 'border-zinc-700 hover:border-indigo-500 bg-zinc-950'}`}>
+                        <input
+                          type="file"
+                          accept=".zip,.cbz,application/zip"
+                          className="hidden"
+                          disabled={zipStatus.busy}
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            if (f) handleZipUpload(f);
+                            e.target.value = '';
                           }}
-                          className="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold underline"
-                        >
-                          Gerar 16 Páginas Digitais Automáticas
-                        </button>
-                      </div>
+                        />
+                        <span className="text-sm font-semibold text-white">
+                          {zipStatus.busy ? 'Enviando…' : 'Toque para escolher o arquivo'}
+                        </span>
+                        <span className="text-[11px] text-zinc-400">{zipStatus.message || 'As páginas são extraídas e salvas na nuvem automaticamente'}</span>
+                        {zipStatus.total > 0 && (
+                          <div className="w-full h-2 mt-2 rounded-full bg-zinc-800 overflow-hidden">
+                            <div className="h-full bg-indigo-500 transition-all" style={{ width: `${Math.round((zipStatus.done / zipStatus.total) * 100)}%` }} />
+                          </div>
+                        )}
+                      </label>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-zinc-300 mb-1">
+                        URLs das Imagens / Páginas (uma por linha)
+                      </label>
                       <textarea
                         rows={5}
                         value={chapterForm.pagesText}
@@ -1015,7 +1077,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                         className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs font-mono text-white placeholder-zinc-600"
                       />
                       <p className="text-[11px] text-zinc-500 mt-1">
-                        Dica: Caso deixe em branco ou use o botão acima, o leitor gerará páginas digitais de alta definição automaticamente para este capítulo.
+                        Preenchido automaticamente ao enviar um .zip/.cbz, ou cole links de imagens.
                       </p>
                     </div>
 
