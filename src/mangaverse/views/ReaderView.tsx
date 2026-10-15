@@ -148,27 +148,15 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
             saveReadingProgress(manga, currentChapter.id, currentChapter.chapterNumber, 1, res.pages.length);
           } else {
             // Automatic seamless digital edition fallback
-            const totalFallback = 16;
-            const fallbackUrls = Array.from({ length: totalFallback }, (_, i) =>
-              `/api/manga/page-canvas?mangaId=${encodeURIComponent(manga.id)}&chapterNumber=${encodeURIComponent(currentChapter.chapterNumber)}&page=${i + 1}&totalPages=${totalFallback}&title=${encodeURIComponent(manga.title)}`
-            );
-            setPages(fallbackUrls);
-            setDirectPages(fallbackUrls);
-            setSourceBadge('Edição Digital MangaVerse');
-            saveReadingProgress(manga, currentChapter.id, currentChapter.chapterNumber, 1, totalFallback);
+            setPages([]);
+            setDirectPages([]);
           }
           setLoading(false);
         }
       }).catch(() => {
         if (mounted) {
-          const totalFallback = 16;
-          const fallbackUrls = Array.from({ length: totalFallback }, (_, i) =>
-            `/api/manga/page-canvas?mangaId=${encodeURIComponent(manga.id)}&chapterNumber=${encodeURIComponent(currentChapter.chapterNumber)}&page=${i + 1}&totalPages=${totalFallback}&title=${encodeURIComponent(manga.title)}`
-          );
-          setPages(fallbackUrls);
-          setDirectPages(fallbackUrls);
-          setSourceBadge('Edição Digital MangaVerse');
-          saveReadingProgress(manga, currentChapter.id, currentChapter.chapterNumber, 1, totalFallback);
+          setPages([]);
+            setDirectPages([]);
           setLoading(false);
         }
       });
@@ -351,11 +339,6 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
         img.src = directPages[index];
         return;
       }
-    }
-    // If external CDN failed, fallback to high-fidelity canvas page
-    if (!img.src.includes('/api/manga/page-canvas')) {
-      img.src = `/api/manga/page-canvas?mangaId=${encodeURIComponent(manga.id)}&chapterNumber=${encodeURIComponent(currentChapter.chapterNumber)}&page=${index + 1}&totalPages=${displayPages.length || 16}&title=${encodeURIComponent(manga.title)}`;
-      return;
     }
     setFailedImages((prev) => ({ ...prev, [index]: true }));
   };
@@ -700,20 +683,11 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
               <BookOpen className="w-8 h-8" />
             </div>
             <h3 className="text-lg font-bold text-white">
-              Nenhuma página encontrada para o Capítulo {currentChapter.chapterNumber}
+              Capítulo {currentChapter.chapterNumber} ainda sem scan em português
             </h3>
             <p className="text-xs text-zinc-400 leading-relaxed">
-              Tentamos carregar as páginas através dos servidores oficiais da API do MangaDex. Você pode carregar a edição digital com painéis em alta resolução ou navegar até outro capítulo.
+              Este capítulo ainda não tem páginas reais disponíveis. Assim que for adicionado, ele aparecerá aqui. Enquanto isso, você pode ir para outro capítulo.
             </p>
-            <div className="pt-2">
-              <button
-                onClick={handleGenerateCanvasPages}
-                className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold inline-flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition-all"
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>Carregar Edição Digital (Cap. {currentChapter.chapterNumber})</span>
-              </button>
-            </div>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               {prevChapter && (
                 <button

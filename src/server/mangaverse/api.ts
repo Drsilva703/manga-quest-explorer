@@ -1228,10 +1228,7 @@ const app = new ShimApp();
       pageUrls = pages.map((p: string) => String(p).trim()).filter(Boolean);
     }
     if (pageUrls.length === 0) {
-      const total = 16;
-      pageUrls = Array.from({ length: total }, (_, i) =>
-        `/api/manga/page-canvas?mangaId=${encodeURIComponent(mangaId)}&chapterNumber=${encodeURIComponent(chapterNumber)}&page=${i + 1}&totalPages=${total}&title=${encodeURIComponent(title || mangaId)}`
-      );
+      return res.status(400).json({ error: 'Adicione ao menos uma página real (URL de imagem) ao capítulo.' });
     }
 
     const newChapter: any = {
@@ -1690,7 +1687,7 @@ const app = new ShimApp();
     const lang = (req.query.lang as string) || 'pt-br';
     const mangaTitle = (req.query.mangaTitle as string) || (req.query.title as string) || '';
 
-    const cacheKey = `chapters_v11_${id}_${lang}_${encodeURIComponent(mangaTitle)}`;
+    const cacheKey = `chapters_v12_${id}_${lang}_${encodeURIComponent(mangaTitle)}`;
     const cached = getFromCache<MangaChapter[]>(cacheKey);
     if (cached) return res.json(cached);
 
@@ -1878,9 +1875,10 @@ const app = new ShimApp();
         });
       }
 
+      const customIds = new Set(customChs.map(c => c.id));
       let finalChapters = Array.from(chapterMap.values()).filter(
         c => !isChapterDeleted(id, c.chapterNumber)
-      );
+      ).map(c => ({ ...c, hasContent: c.id.startsWith('md-') || customIds.has(c.id) }));
       finalChapters.sort((a, b) => {
         const na = parseFloat(a.chapterNumber) || 0;
         const nb = parseFloat(b.chapterNumber) || 0;
@@ -1939,7 +1937,7 @@ const app = new ShimApp();
       return res.json(payload);
     }
 
-    const cacheKey = `pages_v10_${chapterId}_${mangaId}_${chapterNumber}_${quality}`;
+    const cacheKey = `pages_v11_${chapterId}_${mangaId}_${chapterNumber}_${quality}`;
     const cached = getFromCache<any>(cacheKey);
     if (cached && cached.pages && cached.pages.length > 0) return res.json(cached);
 
@@ -2089,48 +2087,11 @@ const app = new ShimApp();
         }
       }
 
-      // If exact MangaDex chapter with pages is not found, fallback to high-fidelity digital edition for this EXACT chapter
-      // (NEVER return pages from another chapter, which broke chapter numbering and story flow)
-
-      // If no hosted MangaDex pages exist for this title, generate 16 high-fidelity manga pages
-      const totalCanvasPages = 16;
-      const canvasPages = Array.from({ length: totalCanvasPages }, (_, i) =>
-        `/api/manga/page-canvas?mangaId=${encodeURIComponent(mangaId)}&chapterNumber=${encodeURIComponent(chapterNumber || '1')}&page=${i + 1}&totalPages=${totalCanvasPages}&title=${encodeURIComponent(mangaTitle || mangaId)}`
-      );
-
-      const canvasPayload = {
-        chapterId,
-        mangaId,
-        chapterNumber: chapterNumber || '1',
-        chapterTitle: `Capítulo ${chapterNumber || '1'}`,
-        pages: canvasPages,
-        directPages: canvasPages,
-        dataSaverPages: canvasPages,
-        directDataSaverPages: canvasPages,
-        source: 'canvas',
-        pagesCount: totalCanvasPages
-      };
-      setInCache(cacheKey, canvasPayload);
-      return res.json(canvasPayload);
+      // No real scan found: never invent pages
+      return res.json({ chapterId, mangaId, chapterNumber: chapterNumber || '1', chapterTitle: `Capítulo ${chapterNumber || '1'}`, pages: [], directPages: [], dataSaverPages: [], directDataSaverPages: [], source: 'unavailable', pagesCount: 0 });
     } catch (err) {
-      console.warn('Error resolving chapter pages, fallback to canvas generator:', err);
-      const totalCanvasPages = 16;
-      const canvasPages = Array.from({ length: totalCanvasPages }, (_, i) =>
-        `/api/manga/page-canvas?mangaId=${encodeURIComponent(mangaId)}&chapterNumber=${encodeURIComponent(chapterNumber || '1')}&page=${i + 1}&totalPages=${totalCanvasPages}&title=${encodeURIComponent(mangaTitle || mangaId)}`
-      );
-
-      return res.json({
-        chapterId,
-        mangaId,
-        chapterNumber: chapterNumber || '1',
-        chapterTitle: `Capítulo ${chapterNumber || '1'}`,
-        pages: canvasPages,
-        directPages: canvasPages,
-        dataSaverPages: canvasPages,
-        directDataSaverPages: canvasPages,
-        source: 'canvas',
-        pagesCount: totalCanvasPages
-      });
+      console.warn('Error resolving chapter pages:', err);
+      return res.json({ chapterId, mangaId, chapterNumber: chapterNumber || '1', chapterTitle: `Capítulo ${chapterNumber || '1'}`, pages: [], directPages: [], dataSaverPages: [], directDataSaverPages: [], source: 'unavailable', pagesCount: 0       });
     }
   });
 
