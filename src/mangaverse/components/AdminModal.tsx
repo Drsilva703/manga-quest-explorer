@@ -164,10 +164,10 @@ export const AdminModal: React.FC<AdminModalProps> = ({
         `/api/manga/chapters?id=${encodeURIComponent(gapsMangaId)}&mangaTitle=${encodeURIComponent(title)}&lang=pt-br`
       );
       if (!res.ok) throw new Error('Falha ao buscar capítulos');
-      const list: { id: string; chapterNumber: string }[] = await res.json();
-      // Capítulos gerados automaticamente (sem conteúdo real) têm id iniciando com "gen-"
+      const list: { id: string; chapterNumber: string; hasContent?: boolean }[] = await res.json();
+      // Só conta como real se o servidor confirmou páginas de scan (MangaDex ou upload do ADM)
       const missing = list
-        .filter((c) => c.id.startsWith('gen-'))
+        .filter((c) => !c.hasContent)
         .map((c) => c.chapterNumber)
         .sort((a, b) => (parseFloat(a) || 0) - (parseFloat(b) || 0));
       setGapsResult({
