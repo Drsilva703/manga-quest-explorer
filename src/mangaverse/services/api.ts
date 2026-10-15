@@ -258,8 +258,8 @@ export async function fetchChapterPages(
     directPages: canvasPages,
     dataSaverPages: canvasPages,
     directDataSaverPages: canvasPages,
-    source: 'canvas',
-    pagesCount: totalFallback
+    source: 'unavailable',
+    pagesCount: 0
   };
 }
 
