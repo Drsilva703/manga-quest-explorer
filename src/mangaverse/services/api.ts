@@ -245,9 +245,8 @@ export async function fetchChapterPages(
   // Guaranteed high-fidelity fallback: Generate 16 canvas pages if external APIs fail
   const num = chapterNumber || '1';
   const totalFallback = 16;
-  const canvasPages = Array.from({ length: totalFallback }, (_, i) =>
-    `/api/manga/page-canvas?mangaId=${encodeURIComponent(mangaId)}&chapterNumber=${encodeURIComponent(num)}&page=${i + 1}&totalPages=${totalFallback}&title=${encodeURIComponent(mangaTitle || mangaId)}`
-  );
+  void totalFallback;
+  const canvasPages: string[] = [];
 
   return {
     chapterId,

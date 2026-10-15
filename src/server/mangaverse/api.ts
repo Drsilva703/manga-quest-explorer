@@ -1228,10 +1228,7 @@ const app = new ShimApp();
       pageUrls = pages.map((p: string) => String(p).trim()).filter(Boolean);
     }
     if (pageUrls.length === 0) {
-      const total = 16;
-      pageUrls = Array.from({ length: total }, (_, i) =>
-        `/api/manga/page-canvas?mangaId=${encodeURIComponent(mangaId)}&chapterNumber=${encodeURIComponent(chapterNumber)}&page=${i + 1}&totalPages=${total}&title=${encodeURIComponent(title || mangaId)}`
-      );
+      return res.status(400).json({ error: 'Adicione ao menos uma página real (URL de imagem) ao capítulo.' });
     }
 
     const newChapter: any = {
