@@ -332,7 +332,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
         const res = await fetch(`/api/upload-page?mangaId=${encodeURIComponent(selectedMangaId)}&chapter=${encodeURIComponent(chNum)}&name=${encodeURIComponent(name)}`, {
           method: 'POST',
           headers: { 'content-type': mime },
-          body: data,
+          body: data as unknown as BodyInit,
         });
         const json = await res.json();
         if (!res.ok || !json.url) throw new Error(json.error || 'Falha no envio');
