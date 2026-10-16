@@ -19,11 +19,6 @@ import {
   addCustomManga,
   updateCustomManga,
   deleteManga,
-  getCustomChapters,
-  isChapterDeleted,
-  addCustomChapter,
-  updateChapterPages,
-  deleteChapter,
   getChatMessages,
   addChatMessage,
   deleteChatMessage,
@@ -40,6 +35,7 @@ import {
   getPixConfig,
   updatePixConfig
 } from './adminDb';
+import { getCustomChapters, getChapterRecords, rowToChapter, isChapterDeleted, addCustomChapter, updateChapterPages, deleteChapter, authorizedChapterClient } from './chapterDb';
 
 
 
@@ -1135,8 +1131,8 @@ const app = new ShimApp();
   });
 
   // Admin stats
-  app.get('/api/admin/stats', (_req, res) => {
-    res.json(getStats());
+  app.get('/api/admin/stats', async (_req, res) => {
+    res.json({ ...getStats(), customChaptersCount: (await getCustomChapters()).length });
   });
 
   // Pix and Donation Settings API
@@ -1212,12 +1208,14 @@ const app = new ShimApp();
   });
 
   // Admin Chapters Management
-  app.get('/api/admin/chapters', (req, res) => {
+  app.get('/api/admin/chapters', async (req, res) => {
     const mangaId = req.query.mangaId as string;
-    res.json(getCustomChapters(mangaId));
+    res.json(await getCustomChapters(mangaId));
   });
 
-  app.post('/api/admin/chapters', (req, res) => {
+  app.post('/api/admin/chapters', async (req, res) => {
+    const client = await authorizedChapterClient(req.headers);
+    if (!client) return res.status(403).json({ error: 'Entre com a conta Google do administrador para salvar capítulos.' });
     const { mangaId, chapterNumber, title, pages, scanlationGroup } = req.body;
     if (!mangaId || !chapterNumber) {
       return res.status(400).json({ error: 'mangaId e chapterNumber são obrigatórios' });
@@ -1243,7 +1241,7 @@ const app = new ShimApp();
       publishedAt: new Date().toISOString()
     };
 
-    addCustomChapter(newChapter);
+    await addCustomChapter(newChapter, client);
     // Invalidate chapters and pages cache for this manga
     for (const key of cache.keys()) {
       if (key.includes(mangaId) || key.includes(chapterNumber)) {
@@ -1253,13 +1251,16 @@ const app = new ShimApp();
     res.json(newChapter);
   });
 
-  app.put('/api/admin/chapters/pages', (req, res) => {
+  app.put('/api/admin/chapters/pages', async (req, res) => {
+    const client = await authorizedChapterClient(req.headers);
+    if (!client) return res.status(403).json({ error: 'Entre com a conta Google do administrador para salvar capítulos.' });
     const { mangaId, chapterNumber, pages } = req.body;
     if (!mangaId || !chapterNumber || !Array.isArray(pages)) {
       return res.status(400).json({ error: 'Parâmetros inválidos' });
     }
     const cleanPages = pages.map((p: string) => String(p).trim()).filter(Boolean);
-    updateChapterPages(mangaId, String(chapterNumber), cleanPages);
+    if (!cleanPages.length) return res.status(400).json({ error: 'Adicione ao menos uma página real ao capítulo.' });
+    await updateChapterPages(mangaId, String(chapterNumber), cleanPages, client);
     for (const key of cache.keys()) {
       if (key.includes(mangaId) || key.includes(chapterNumber)) {
         cache.delete(key);
@@ -1268,13 +1269,15 @@ const app = new ShimApp();
     res.json({ success: true, count: cleanPages.length });
   });
 
-  app.delete('/api/admin/chapters', (req, res) => {
+  app.delete('/api/admin/chapters', async (req, res) => {
+    const client = await authorizedChapterClient(req.headers);
+    if (!client) return res.status(403).json({ error: 'Entre com a conta Google do administrador para salvar capítulos.' });
     const mangaId = (req.query.mangaId as string) || req.body.mangaId;
     const chapterNumber = (req.query.chapterNumber as string) || req.body.chapterNumber;
     if (!mangaId || !chapterNumber) {
       return res.status(400).json({ error: 'mangaId e chapterNumber são obrigatórios' });
     }
-    deleteChapter(String(mangaId), String(chapterNumber));
+    await deleteChapter(String(mangaId), String(chapterNumber), client);
     for (const key of cache.keys()) {
       if (key.includes(mangaId) || key.includes(chapterNumber)) {
         cache.delete(key);
@@ -1687,7 +1690,10 @@ const app = new ShimApp();
     const lang = (req.query.lang as string) || 'pt-br';
     const mangaTitle = (req.query.mangaTitle as string) || (req.query.title as string) || '';
 
-    const cacheKey = `chapters_v12_${id}_${lang}_${encodeURIComponent(mangaTitle)}`;
+    const records = await getChapterRecords(id);
+    const customChs = records.filter(row => !row.deleted).map(rowToChapter);
+    const deletedNumbers = new Set(records.filter(row => row.deleted).map(row => row.chapter_number));
+    const cacheKey = `chapters_v13_${id}_${lang}_${encodeURIComponent(mangaTitle)}_${JSON.stringify(records)}`;
     const cached = getFromCache<MangaChapter[]>(cacheKey);
     if (cached) return res.json(cached);
 
@@ -1861,7 +1867,7 @@ const app = new ShimApp();
       }
 
       // Inserir capítulos personalizados criados pelo administrador
-      const customChs = getCustomChapters(id);
+      // Persistent records were read before the cache lookup.
       for (const customCh of customChs) {
         chapterMap.set(customCh.chapterNumber, {
           id: customCh.id,
@@ -1877,8 +1883,8 @@ const app = new ShimApp();
 
       const customIds = new Set(customChs.map(c => c.id));
       let finalChapters = Array.from(chapterMap.values()).filter(
-        c => !isChapterDeleted(id, c.chapterNumber)
-      ).map(c => ({ ...c, hasContent: c.id.startsWith('md-') || customIds.has(c.id) }));
+        c => !deletedNumbers.has(c.chapterNumber)
+      ).map(c => ({ ...c, hasContent: c.id.startsWith('md-') || (customIds.has(c.id) && (c.pagesCount || 0) > 0) }));
       finalChapters.sort((a, b) => {
         const na = parseFloat(a.chapterNumber) || 0;
         const nb = parseFloat(b.chapterNumber) || 0;
@@ -1914,12 +1920,12 @@ const app = new ShimApp();
       }
     }
 
-    if (isChapterDeleted(mangaId, chapterNumber)) {
+    if (await isChapterDeleted(mangaId, chapterNumber)) {
       return res.status(404).json({ error: 'Capítulo removido', pages: [] });
     }
 
     // 0. Check admin custom chapters first!
-    const customList = getCustomChapters(mangaId);
+    const customList = await getCustomChapters(mangaId);
     const customMatch = customList.find(c => c.chapterNumber === chapterNumber || c.id === chapterId);
     if (customMatch && Array.isArray(customMatch.pages) && customMatch.pages.length > 0) {
       const payload = {
@@ -2370,5 +2376,10 @@ const app = new ShimApp();
 
 
 export async function handleMangaverseApi(request: Request): Promise<Response> {
-  return app.handle(request);
+  try {
+    return await app.handle(request);
+  } catch (error) {
+    console.error('MangaVerse API request failed:', error);
+    return Response.json({ error: 'Não foi possível acessar os capítulos salvos. Tente novamente.' }, { status: 503 });
+  }
 }
