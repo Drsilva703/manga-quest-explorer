@@ -244,6 +244,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     }
   }, [isOpen, selectedMangaId, commentsMangaId, commentsChapterNum]);
 
+  const [zipStatus, setZipStatus] = useState({ busy: false, done: 0, total: 0, message: '' });
+
   if (!isOpen) return null;
 
   // Manga actions
@@ -297,7 +299,6 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   };
 
   // ZIP / CBZ upload
-  const [zipStatus, setZipStatus] = useState({ busy: false, done: 0, total: 0, message: '' });
   const handleZipUpload = async (file: File) => {
     try {
       setZipStatus({ busy: true, done: 0, total: 0, message: 'Abrindo arquivo…' });
