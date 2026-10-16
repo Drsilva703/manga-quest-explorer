@@ -1,0 +1,3 @@
+- [ ] Salvar capítulos e exclusões no banco permanente.
+- [ ] Proteger alterações pela conta Google do administrador e mostrar falhas de gravação.
+- [ ] Testar cadastro, leitura, atualização e exclusão.

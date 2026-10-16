@@ -1,4 +1,4 @@
-import { MangaItem, CustomChapterData, ChatMessage, ChapterComment } from '../../mangaverse/types/manga';
+import { MangaItem, ChatMessage, ChapterComment } from '../../mangaverse/types/manga';
 
 // In-memory stores (ported from JSON-file persistence; serverless runtimes have no fs)
 const memoryFiles = new Map<string, string>();
@@ -28,8 +28,6 @@ const DEFAULT_PIX_CONFIG: PixAdminConfig = {
 interface AdminStore {
   customMangas: MangaItem[];
   deletedMangaIds: string[];
-  customChapters: CustomChapterData[];
-  deletedChapterKeys: string[];
 }
 
 interface ChatStore {
@@ -141,8 +139,6 @@ const INITIAL_COMMENTS: ChapterComment[] = [
 let adminStore: AdminStore = safeRead<AdminStore>(ADMIN_DATA_FILE, {
   customMangas: [],
   deletedMangaIds: [],
-  customChapters: [],
-  deletedChapterKeys: []
 });
 
 let chatStore: ChatStore = safeRead<ChatStore>(CHAT_FILE, {
@@ -201,73 +197,6 @@ export function deleteManga(id: string): boolean {
     adminStore.deletedMangaIds.push(id);
   }
   adminStore.customMangas = adminStore.customMangas.filter(m => m.id !== id);
-  safeWrite(ADMIN_DATA_FILE, adminStore);
-  return true;
-}
-
-// Chapter Operations
-export function getCustomChapters(mangaId?: string): CustomChapterData[] {
-  if (mangaId) {
-    return adminStore.customChapters.filter(c => c.mangaId === mangaId);
-  }
-  return adminStore.customChapters;
-}
-
-export function isChapterDeleted(mangaId: string, chapterNumber: string): boolean {
-  const key = `${mangaId}:::${chapterNumber}`;
-  return adminStore.deletedChapterKeys.includes(key);
-}
-
-export function addCustomChapter(chapter: CustomChapterData): CustomChapterData {
-  const key = `${chapter.mangaId}:::${chapter.chapterNumber}`;
-  adminStore.deletedChapterKeys = adminStore.deletedChapterKeys.filter(k => k !== key && k !== chapter.id);
-
-  const idx = adminStore.customChapters.findIndex(
-    c => c.mangaId === chapter.mangaId && c.chapterNumber === chapter.chapterNumber
-  );
-  if (idx >= 0) {
-    adminStore.customChapters[idx] = chapter;
-  } else {
-    adminStore.customChapters.unshift(chapter);
-  }
-  safeWrite(ADMIN_DATA_FILE, adminStore);
-  return chapter;
-}
-
-export function updateChapterPages(mangaId: string, chapterNumber: string, pages: string[]): boolean {
-  const idx = adminStore.customChapters.findIndex(
-    c => c.mangaId === mangaId && c.chapterNumber === chapterNumber
-  );
-  if (idx >= 0) {
-    adminStore.customChapters[idx].pages = pages;
-    safeWrite(ADMIN_DATA_FILE, adminStore);
-    return true;
-  } else {
-    // Create new custom chapter record with these pages
-    const newCh: CustomChapterData = {
-      id: `custom-${mangaId}-c${chapterNumber}`,
-      mangaId,
-      chapterNumber,
-      title: `Capítulo ${chapterNumber}`,
-      scanlationGroup: 'Upload do Administrador',
-      language: 'pt-br',
-      pages,
-      publishedAt: new Date().toISOString()
-    };
-    adminStore.customChapters.unshift(newCh);
-    safeWrite(ADMIN_DATA_FILE, adminStore);
-    return true;
-  }
-}
-
-export function deleteChapter(mangaId: string, chapterNumber: string): boolean {
-  const key = `${mangaId}:::${chapterNumber}`;
-  if (!adminStore.deletedChapterKeys.includes(key)) {
-    adminStore.deletedChapterKeys.push(key);
-  }
-  adminStore.customChapters = adminStore.customChapters.filter(
-    c => !(c.mangaId === mangaId && c.chapterNumber === chapterNumber)
-  );
   safeWrite(ADMIN_DATA_FILE, adminStore);
   return true;
 }
@@ -426,7 +355,7 @@ export function deleteComment(commentId: string): boolean {
 export function getStats() {
   return {
     customMangasCount: adminStore.customMangas.length,
-    customChaptersCount: adminStore.customChapters.length,
+    customChaptersCount: 0,
     chatMessagesCount: chatStore.messages.length,
     commentsCount: commentsStore.comments.length,
     bannedUsersCount: chatStore.bannedUsers.length

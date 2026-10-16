@@ -1,3 +1,4 @@
+import { supabase } from '@/integrations/supabase/client';
 import { AdminUser, MangaItem, CustomChapterData, ChatMessage, ChapterComment } from '../types/manga';
 
 const ADMIN_STORAGE_KEY = 'mangaverse_admin_session';
@@ -129,6 +130,12 @@ export async function deleteAdminManga(id: string): Promise<boolean> {
 }
 
 // Chapters
+async function chapterAuthHeaders(): Promise<Record<string, string>> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export async function fetchAdminChapters(mangaId?: string): Promise<CustomChapterData[]> {
   try {
     const url = mangaId ? `/api/admin/chapters?mangaId=${encodeURIComponent(mangaId)}` : '/api/admin/chapters';
@@ -150,7 +157,7 @@ export async function createAdminChapter(data: {
   try {
     const res = await fetch('/api/admin/chapters', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(await chapterAuthHeaders()) },
       body: JSON.stringify(data)
     });
     if (res.ok) return await res.json();
@@ -164,7 +171,7 @@ export async function updateAdminChapterPages(mangaId: string, chapterNumber: st
   try {
     const res = await fetch('/api/admin/chapters/pages', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(await chapterAuthHeaders()) },
       body: JSON.stringify({ mangaId, chapterNumber, pages })
     });
     return res.ok;
@@ -177,7 +184,8 @@ export async function updateAdminChapterPages(mangaId: string, chapterNumber: st
 export async function deleteAdminChapter(mangaId: string, chapterNumber: string): Promise<boolean> {
   try {
     const res = await fetch(`/api/admin/chapters?mangaId=${encodeURIComponent(mangaId)}&chapterNumber=${encodeURIComponent(chapterNumber)}`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      headers: await chapterAuthHeaders()
     });
     return res.ok;
   } catch (err) {

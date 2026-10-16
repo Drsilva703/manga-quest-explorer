@@ -14,7 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      manga_custom_chapters: {
+        Row: {
+          chapter_number: string
+          deleted: boolean
+          id: string
+          language: string
+          manga_id: string
+          pages: string[]
+          published_at: string
+          scanlation_group: string | null
+          title: string
+          volume: string | null
+        }
+        Insert: {
+          chapter_number: string
+          deleted?: boolean
+          id: string
+          language?: string
+          manga_id: string
+          pages?: string[]
+          published_at?: string
+          scanlation_group?: string | null
+          title?: string
+          volume?: string | null
+        }
+        Update: {
+          chapter_number?: string
+          deleted?: boolean
+          id?: string
+          language?: string
+          manga_id?: string
+          pages?: string[]
+          published_at?: string
+          scanlation_group?: string | null
+          title?: string
+          volume?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

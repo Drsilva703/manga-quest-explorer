@@ -356,7 +356,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       .map((p) => p.trim())
       .filter((p) => p.startsWith('http') || p.startsWith('/'));
 
-    await createAdminChapter({
+    const saved = await createAdminChapter({
       mangaId: selectedMangaId,
       chapterNumber: chapterForm.chapterNumber.trim(),
       title: chapterForm.title.trim() || `Capítulo ${chapterForm.chapterNumber}`,
@@ -364,7 +364,11 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       scanlationGroup: chapterForm.scanlationGroup
     });
 
-    showToast(`Capítulo ${chapterForm.chapterNumber} adicionado com sucesso!`);
+    if (!saved) {
+      showToast('Não foi possível salvar. Entre com sua conta Google de administrador e tente novamente.');
+      return;
+    }
+    showToast(`Capítulo ${chapterForm.chapterNumber} salvo na nuvem!`);
     setIsAddingChapter(false);
     setChapterForm({
       chapterNumber: '',
@@ -382,7 +386,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       .map((p) => p.trim())
       .filter((p) => p.startsWith('http') || p.startsWith('/'));
 
-    await updateAdminChapterPages(selectedMangaId, chapterNumber, pages);
+    const saved = await updateAdminChapterPages(selectedMangaId, chapterNumber, pages);
+    if (!saved) { showToast('Não foi possível atualizar. Confira seu login Google e as páginas.'); return; }
     showToast(`Páginas do Capítulo ${chapterNumber} atualizadas!`);
     setEditingPagesChapterNum(null);
     const updated = await fetchAdminChapters(selectedMangaId);
@@ -391,7 +396,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
   const handleDeleteChapter = async (chapterNumber: string) => {
     if (confirm(`Remover Capítulo ${chapterNumber} deste mangá?`)) {
-      await deleteAdminChapter(selectedMangaId, chapterNumber);
+      const deleted = await deleteAdminChapter(selectedMangaId, chapterNumber);
+      if (!deleted) { showToast('Não foi possível remover. Confira seu login Google.'); return; }
       showToast(`Capítulo ${chapterNumber} removido.`);
       const updated = await fetchAdminChapters(selectedMangaId);
       setChapters(updated);
