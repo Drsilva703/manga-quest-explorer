@@ -42,7 +42,9 @@ As chamadas passam por `/api/anime`, no backend, sem necessidade de chave:
 | Detalhes | `/v1/anime/{id}` |
 | Episódios | `/v1/anime/{id}/episodes?page=...` |
 
-O backend valida as respostas, mantém cache de cinco minutos, revalida com ETag e respeita `Retry-After` em respostas 429. As consultas de cada instância são espaçadas para respeitar os limites públicos de 4/s e 120/min por IP; várias instâncias no mesmo IP podem compartilhar a cota. Falhas da API aparecem com opção de tentar novamente, sem títulos inventados.
+O backend valida as respostas, mantém cache de cinco minutos, revalida com ETag e respeita `Retry-After` em respostas 429. Se a conexão ao backend falhar ou ele retornar HTTP 5xx, o navegador consulta diretamente a mesma API pública da Tenrai, que oferece CORS aberto e não exige credenciais. Ambas as rotas usam os mesmos endpoints e a mesma validação de dados. Erros 400, 404 e 429 do backend não acionam essa alternativa.
+
+As consultas de cada instância e as consultas diretas do navegador são espaçadas para respeitar os limites públicos de 4/s e 120/min por IP; várias instâncias no mesmo IP podem compartilhar a cota. Falhas da API aparecem com opção de tentar novamente, sem títulos inventados. Falhas inesperadas do backend são registradas nos logs com o prefixo `[Tenrai]`.
 
 Favoritos, status (assistindo, quero assistir, concluído e abandonado) e progresso ficam na seção **Meus animes**, dentro da biblioteca. São salvos **neste navegador**, sem sincronização entre aparelhos. As chaves antigas de armazenamento de mangás foram preservadas durante a mudança de marca.
 

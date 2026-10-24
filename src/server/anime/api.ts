@@ -1,5 +1,7 @@
-import { normalizeAnime, normalizeEpisode, parsePage } from "./normalize";
+import { normalizeAnime, normalizeEpisode, parsePage } from "../../lib/anime-normalize";
 import { handleAnimeCover } from "./cover";
+import { fetchWithTimeout } from "../../lib/fetch-with-timeout";
+import { animeCatalogPath, type AnimeCollection } from "../../lib/tenrai-paths";
 
 const ORIGIN = "https://api.tenrai.org";
 const cache = new Map<string, { expires: number; value: unknown; etag: string | null }>();
@@ -43,9 +45,9 @@ async function tenrai<T>(
       signal.addEventListener("abort", abort, { once: true });
       if (signal.aborted) abort();
     });
-  const response = await fetch(`${ORIGIN}${path}`, {
+  const response = await fetchWithTimeout(`${ORIGIN}${path}`, {
     headers: { Accept: "application/json", ...(hit?.etag ? { "If-None-Match": hit.etag } : {}) },
-    signal: AbortSignal.any([signal, AbortSignal.timeout(15_000)]),
+    signal,
     redirect: "error",
   });
   if (response.status === 304 && hit) {
@@ -97,7 +99,6 @@ export async function handleAnimeApi(request: Request): Promise<Response> {
   const page = url.searchParams.get("page") || "1";
   if (!/^[1-9]\d{0,3}$/.test(page))
     return Response.json({ error: "Página inválida." }, { status: 400 });
-  const params = new URLSearchParams({ page, limit: "24", sfw: "true" });
   let path = "/v1/anime";
   try {
     if (match[1]) {
@@ -119,18 +120,12 @@ export async function handleAnimeApi(request: Request): Promise<Response> {
     const collection = url.searchParams.get("collection") || "popular";
     if (!["popular", "seasonal", "ranking"].includes(collection))
       return Response.json({ error: "Catálogo inválido." }, { status: 400 });
-    if (query) params.set("q", query);
-    else {
-      path = "/v1/top/anime";
-      if (collection === "popular") params.set("filter", "bypopularity");
-      if (collection === "seasonal") {
-        path = "/v1/seasons/now";
-        params.set("order_by", "members");
-        params.set("sort", "desc");
-      }
-    }
     return Response.json(
-      await tenrai(`${path}?${params}`, request.signal, (body) => parsePage(body, normalizeAnime)),
+      await tenrai(
+        animeCatalogPath(collection as AnimeCollection, query, Number(page)),
+        request.signal,
+        (body) => parsePage(body, normalizeAnime),
+      ),
     );
   } catch (error) {
     if (error instanceof AnimeApiError)
@@ -141,6 +136,11 @@ export async function handleAnimeApi(request: Request): Promise<Response> {
           headers: error.retryAfter ? { "Retry-After": String(error.retryAfter) } : {},
         },
       );
+    console.warn("[Tenrai] Request failed", {
+      route: url.pathname,
+      name: error instanceof Error ? error.name : "UnknownError",
+      message: error instanceof Error ? error.message : "Unknown failure",
+    });
     return Response.json(
       { error: "Não foi possível consultar o catálogo da Tenrai. Tente novamente em instantes." },
       { status: 502 },

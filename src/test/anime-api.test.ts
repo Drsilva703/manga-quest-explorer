@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { normalizeAnime, youtubeId } from "../server/anime/normalize";
+import { normalizeAnime, youtubeId } from "../lib/anime-normalize";
 
 const fixture = {
   mal_id: 1,

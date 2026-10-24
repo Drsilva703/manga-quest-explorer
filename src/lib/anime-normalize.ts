@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Anime, AnimeEpisode } from "../../mangaverse/types/anime";
+import type { Anime, AnimeEpisode } from "../mangaverse/types/anime";
 
 const record = z.record(z.unknown());
 const names = (value: unknown): string[] =>

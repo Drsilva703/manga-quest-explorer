@@ -103,10 +103,11 @@ describe("anime discovery and library", () => {
     const fetch = vi
       .fn()
       .mockResolvedValueOnce(Response.json({ error: "Tenrai indisponível" }, { status: 502 }))
+      .mockResolvedValueOnce(Response.json({ error: "Tenrai indisponível" }, { status: 502 }))
       .mockImplementation(() => Promise.resolve(Response.json({ items: [], hasNextPage: false })));
     vi.stubGlobal("fetch", fetch);
     mount(<AnimeView onSelect={vi.fn()} />);
-    expect(await screen.findByRole("alert")).toHaveTextContent("Tenrai indisponível");
+    expect(await screen.findByRole("alert")).toHaveTextContent("A Tenrai está indisponível");
     fireEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
     expect(
       await screen.findByText("Nenhum anime encontrado. Tente outro nome."),

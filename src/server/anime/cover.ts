@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from "../../lib/fetch-with-timeout";
+
 export async function handleAnimeCover(request: Request): Promise<Response> {
   const source = new URL(request.url).searchParams.get("url") || "";
   let url: URL;
@@ -18,10 +20,14 @@ export async function handleAnimeCover(request: Request): Promise<Response> {
     return new Response("Cover source not allowed", { status: 400 });
   }
   try {
-    const response = await fetch(url.href, {
-      redirect: "error",
-      signal: AbortSignal.any([request.signal, AbortSignal.timeout(10_000)]),
-    });
+    const response = await fetchWithTimeout(
+      url.href,
+      {
+        redirect: "error",
+        signal: request.signal,
+      },
+      10_000,
+    );
     const contentType = response.headers.get("Content-Type") || "";
     if (!response.ok || !/^image\/(?:jpeg|png|webp)(?:;|$)/i.test(contentType)) {
       return new Response("Cover unavailable", { status: 502 });
