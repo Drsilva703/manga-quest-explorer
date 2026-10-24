@@ -113,7 +113,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const [chapterForm, setChapterForm] = useState({
     chapterNumber: '',
     title: '',
-    scanlationGroup: 'MangaVerse Scan (ADM)',
+    scanlationGroup: 'NipponBR Scan (ADM)',
     pagesText: ''
   });
   const [editingPagesChapterNum, setEditingPagesChapterNum] = useState<string | null>(null);
@@ -131,9 +131,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   // Pix & Donation moderation state
   const [pixConfig, setPixConfig] = useState<PixConfigData>({
     key: OFFICIAL_PIX_KEY,
-    merchantName: 'MangaVerse Apoio',
+    merchantName: 'NipponBR Apoio',
     merchantCity: 'SAO PAULO',
-    description: 'Apoio aos servidores e acervo MangaVerse',
+    description: 'Apoio aos servidores e acervo NipponBR',
     suggestedAmounts: [5, 10, 25, 50]
   });
   const [pixPreviewAmount, setPixPreviewAmount] = useState<number>(10);
@@ -232,7 +232,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     setPixConfig((prev) => ({
       ...prev,
       key: OFFICIAL_PIX_KEY,
-      merchantName: 'MangaVerse Apoio',
+      merchantName: 'NipponBR Apoio',
       merchantCity: 'SAO PAULO'
     }));
     showToast('Chave restaurada para a chave oficial padrão.');
@@ -373,7 +373,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     setChapterForm({
       chapterNumber: '',
       title: '',
-      scanlationGroup: 'MangaVerse Scan (ADM)',
+      scanlationGroup: 'NipponBR Scan (ADM)',
       pagesText: ''
     });
     const updated = await fetchAdminChapters(selectedMangaId);
@@ -461,7 +461,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base sm:text-lg font-black text-white">
-                  Painel de Administração MangaVerse
+                  Painel de Administração NipponBR
                 </h1>
                 <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30">
                   {adminUser.email}
@@ -1038,7 +1038,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                           type="text"
                           value={chapterForm.scanlationGroup}
                           onChange={(e) => setChapterForm({ ...chapterForm, scanlationGroup: e.target.value })}
-                          placeholder="MangaVerse Scan"
+                          placeholder="NipponBR Scan"
                           className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white"
                         />
                       </div>
@@ -1465,7 +1465,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                           value={pixConfig.merchantName}
                           onChange={(e) => setPixConfig({ ...pixConfig, merchantName: e.target.value })}
                           className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 focus:border-pink-500 text-xs text-white focus:outline-none"
-                          placeholder="MangaVerse Apoio"
+                          placeholder="NipponBR Apoio"
                           maxLength={25}
                         />
                         <span className="text-[10px] text-zinc-500">Máximo 25 caracteres (padrão EMV)</span>
@@ -1496,7 +1496,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                         value={pixConfig.description}
                         onChange={(e) => setPixConfig({ ...pixConfig, description: e.target.value })}
                         className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 focus:border-pink-500 text-xs text-white focus:outline-none"
-                        placeholder="Apoio aos servidores e acervo MangaVerse"
+                        placeholder="Apoio aos servidores e acervo NipponBR"
                       />
                     </div>
 
@@ -1587,10 +1587,10 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                       </div>
 
                       <span className="text-xs font-bold text-white mb-0.5">
-                        Pix MangaVerse · R$ {pixPreviewAmount.toFixed(2)}
+                        Pix NipponBR · R$ {pixPreviewAmount.toFixed(2)}
                       </span>
                       <span className="text-[10px] text-zinc-400 mb-3">
-                        {pixConfig.merchantName || 'MangaVerse Apoio'} ({pixConfig.merchantCity || 'SAO PAULO'})
+                        {pixConfig.merchantName || 'NipponBR Apoio'} ({pixConfig.merchantCity || 'SAO PAULO'})
                       </span>
 
                       {/* Display key */}

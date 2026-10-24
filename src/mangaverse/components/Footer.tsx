@@ -17,16 +17,16 @@ export const Footer: React.FC<FooterProps> = ({ onOpenSupport, onOpenSettings })
               <BookOpen className="w-4 h-4" />
             </div>
             <span className="text-base font-bold text-white tracking-tight">
-              Manga<span className="text-indigo-400">Verse</span>
+              Nippon<span className="text-indigo-400">BR</span>
             </span>
           </div>
           <p className="text-xs text-zinc-400 max-w-md">
-            Plataforma moderna de leitura e catálogo de mangás, manhwas e quadrinhos digitais. 
+            Seu universo de animes, mangás, manhwas e quadrinhos digitais.
             Prioridade total para traduções em português brasileiro (PT-BR) com alta definição.
           </p>
           <div className="flex items-center justify-center md:justify-start gap-2 text-[11px] text-zinc-400">
             <ShieldCheck className="w-3.5 h-3.5 text-zinc-400" />
-            <span>MangaVerse · Leitor digital rápido, responsivo e gratuito.</span>
+            <span>NipponBR · Leitor digital rápido, responsivo e gratuito.</span>
           </div>
         </div>
 

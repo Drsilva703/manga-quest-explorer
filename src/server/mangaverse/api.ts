@@ -730,7 +730,7 @@ async function fetchCombinedCatalog() {
   // 1. MangaDex Top Followed with PT-BR Scans
   promises.push(
     fetch('https://api.mangadex.org/manga?limit=30&availableTranslatedLanguage[]=pt-br&availableTranslatedLanguage[]=pt&includes[]=cover_art&includes[]=author&order[followedCount]=desc&contentRating[]=safe&contentRating[]=suggestive', {
-      headers: { 'User-Agent': 'MangaVerse-App/2.0' },
+      headers: { 'User-Agent': 'NipponBR-App/2.0' },
       signal: AbortSignal.timeout(6000)
     })
       .then(r => r.json())
@@ -741,7 +741,7 @@ async function fetchCombinedCatalog() {
   // 2. MangaDex Top Rated with PT-BR Scans
   promises.push(
     fetch('https://api.mangadex.org/manga?limit=25&availableTranslatedLanguage[]=pt-br&availableTranslatedLanguage[]=pt&includes[]=cover_art&includes[]=author&order[rating]=desc&contentRating[]=safe&contentRating[]=suggestive', {
-      headers: { 'User-Agent': 'MangaVerse-App/2.0' },
+      headers: { 'User-Agent': 'NipponBR-App/2.0' },
       signal: AbortSignal.timeout(6000)
     })
       .then(r => r.json())
@@ -820,7 +820,7 @@ async function fetchCombinedCatalog() {
   promises.push(
     fetch('https://graphql.anilist.co', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'User-Agent': 'MangaVerse-App/2.0' },
+      headers: { 'Content-Type': 'application/json', 'User-Agent': 'NipponBR-App/2.0' },
       body: JSON.stringify({ query: aniQuery }),
       signal: AbortSignal.timeout(5000)
     })
@@ -869,7 +869,7 @@ async function searchAniList(q: string): Promise<MangaItem[]> {
 
     const res = await fetch('https://graphql.anilist.co', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'User-Agent': 'MangaVerse-App/2.0' },
+      headers: { 'Content-Type': 'application/json', 'User-Agent': 'NipponBR-App/2.0' },
       body: JSON.stringify({ query, variables: { q } }),
       signal: AbortSignal.timeout(5000)
     });
@@ -945,7 +945,7 @@ async function fetchAniListEnrichment(searchTitle: string, anilistId?: number, m
 
     const res = await fetch('https://graphql.anilist.co', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'User-Agent': 'MangaVerse-App/2.0' },
+      headers: { 'Content-Type': 'application/json', 'User-Agent': 'NipponBR-App/2.0' },
       body: JSON.stringify({ query, variables }),
       signal: AbortSignal.timeout(4500)
     });
@@ -1235,7 +1235,7 @@ const app = new ShimApp();
       chapterNumber: String(chapterNumber),
       title: title || `Capítulo ${chapterNumber}`,
       volume: calculateVolume(mangaId, parseFloat(chapterNumber) || 1),
-      scanlationGroup: scanlationGroup || 'Upload Oficial MangaVerse',
+      scanlationGroup: scanlationGroup || 'Upload Oficial NipponBR',
       language: 'pt-br',
       pages: pageUrls,
       publishedAt: new Date().toISOString()
@@ -1497,7 +1497,7 @@ const app = new ShimApp();
 
       promises.push(
         fetch(mdUrl.toString(), {
-          headers: { 'User-Agent': 'MangaVerse-App/2.0' },
+          headers: { 'User-Agent': 'NipponBR-App/2.0' },
           signal: AbortSignal.timeout(5000)
         })
           .then(r => r.json())
@@ -1598,7 +1598,7 @@ const app = new ShimApp();
         } else if (id.startsWith('md-')) {
           const mdId = id.replace('md-', '');
           const r = await fetch(`https://api.mangadex.org/manga/${mdId}?includes[]=cover_art&includes[]=author`, {
-            headers: { 'User-Agent': 'MangaVerse-App/2.0' },
+            headers: { 'User-Agent': 'NipponBR-App/2.0' },
             signal: AbortSignal.timeout(5000)
           });
           const data = await r.json();
@@ -1705,7 +1705,7 @@ const app = new ShimApp();
       if (mdIds.length === 0) {
         const cleanTitle = (mangaTitle || id).replace(/^(al-|md-|ck-|kt-)/i, '').replace(/[-_]/g, ' ').trim();
         const sRes = await fetch(`https://api.mangadex.org/manga?title=${encodeURIComponent(cleanTitle)}&limit=1&order[followedCount]=desc`, {
-          headers: { 'User-Agent': 'MangaVerse-App/2.0' },
+          headers: { 'User-Agent': 'NipponBR-App/2.0' },
           signal: AbortSignal.timeout(4000)
         }).then(r => r.json()).catch(() => null);
         if (sRes?.data?.[0]?.id) {
@@ -1718,7 +1718,7 @@ const app = new ShimApp();
         let mdChapters: any[] = [];
         const chPtUrl1 = `https://api.mangadex.org/chapter?manga=${mdId}&translatedLanguage[]=pt-br&translatedLanguage[]=pt&includeExternalUrl=0&order[chapter]=desc&limit=100&offset=0`;
         const chPtRes1 = await fetch(chPtUrl1, {
-          headers: { 'User-Agent': 'MangaVerse-App/2.0' },
+          headers: { 'User-Agent': 'NipponBR-App/2.0' },
           signal: AbortSignal.timeout(6000)
         }).then(r => r.json()).catch(() => null);
 
@@ -1733,7 +1733,7 @@ const app = new ShimApp();
             const extraRes = await Promise.all(
               offsets.map(off =>
                 fetch(`https://api.mangadex.org/chapter?manga=${mdId}&translatedLanguage[]=pt-br&translatedLanguage[]=pt&includeExternalUrl=0&order[chapter]=desc&limit=100&offset=${off}`, {
-                  headers: { 'User-Agent': 'MangaVerse-App/2.0' },
+                  headers: { 'User-Agent': 'NipponBR-App/2.0' },
                   signal: AbortSignal.timeout(6000)
                 }).then(r => r.json()).catch(() => null)
               )
@@ -1875,7 +1875,7 @@ const app = new ShimApp();
           volume: customCh.volume || calculateVolume(id, parseFloat(customCh.chapterNumber) || 1),
           title: customCh.title,
           language: customCh.language || 'pt-br',
-          scanlationGroup: customCh.scanlationGroup || 'Upload Oficial MangaVerse (ADM)',
+          scanlationGroup: customCh.scanlationGroup || 'Upload Oficial NipponBR (ADM)',
           publishedAt: customCh.publishedAt,
           pagesCount: customCh.pages.length
         });
@@ -1982,7 +1982,7 @@ const app = new ShimApp();
       if (chapterId.startsWith('md-')) {
         const cleanMdId = chapterId.replace('md-', '');
         const r = await fetch(`https://api.mangadex.org/at-home/server/${cleanMdId}`, {
-          headers: { 'User-Agent': 'MangaVerse-App/2.0' },
+          headers: { 'User-Agent': 'NipponBR-App/2.0' },
           signal: AbortSignal.timeout(7000)
         }).then(res => res.json()).catch(() => null);
 
@@ -2031,7 +2031,7 @@ const app = new ShimApp();
         const targetUuid = BERSERK_VERIFIED_MAP[chapterNumber || '1'];
         if (targetUuid) {
           const r = await fetch(`https://api.mangadex.org/at-home/server/${targetUuid}`, {
-            headers: { 'User-Agent': 'MangaVerse-App/2.0' },
+            headers: { 'User-Agent': 'NipponBR-App/2.0' },
             signal: AbortSignal.timeout(7000)
           }).then(res => res.json()).catch(() => null);
 
@@ -2048,7 +2048,7 @@ const app = new ShimApp();
       if (mdUuids.length === 0) {
         const searchTitle = (mangaTitle || mangaId).replace(/^(al-|md-|ck-|kt-)/i, '').replace(/[-_]/g, ' ').trim();
         const sRes = await fetch(`https://api.mangadex.org/manga?title=${encodeURIComponent(searchTitle)}&limit=1&order[followedCount]=desc`, {
-          headers: { 'User-Agent': 'MangaVerse-App/2.0' },
+          headers: { 'User-Agent': 'NipponBR-App/2.0' },
           signal: AbortSignal.timeout(4000)
         }).then(r => r.json()).catch(() => null);
         if (sRes?.data?.[0]?.id) {
@@ -2064,7 +2064,7 @@ const app = new ShimApp();
           // Priority: exact chapter number in PT-BR only (never English or proximity guess)
           const searchChPtUrl = `https://api.mangadex.org/chapter?manga=${mdMangaId}&chapter[]=${encodeURIComponent(chapterNumber)}&chapter[]=${encodeURIComponent(cleanNum)}&translatedLanguage[]=pt-br&translatedLanguage[]=pt&includeExternalUrl=0&limit=10`;
           const searchPtRes = await fetch(searchChPtUrl, {
-            headers: { 'User-Agent': 'MangaVerse-App/2.0' },
+            headers: { 'User-Agent': 'NipponBR-App/2.0' },
             signal: AbortSignal.timeout(5000)
           }).then(r => r.json()).catch(() => null);
 
@@ -2081,7 +2081,7 @@ const app = new ShimApp();
           const best = validChapters[0];
 
           const atHomeRes = await fetch(`https://api.mangadex.org/at-home/server/${best.id}`, {
-            headers: { 'User-Agent': 'MangaVerse-App/2.0' },
+            headers: { 'User-Agent': 'NipponBR-App/2.0' },
             signal: AbortSignal.timeout(7000)
           }).then(r => r.json()).catch(() => null);
 
@@ -2175,7 +2175,7 @@ const app = new ShimApp();
     <rect x="270" y="460" width="260" height="42" fill="url(#accentGrad)" rx="21"/>
     <text x="400" y="487" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="16" font-weight="800" letter-spacing="1">CAPÍTULO ${chapterNum}</text>
     
-    <text x="400" y="560" text-anchor="middle" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="14">Tradução em Português · Scan Oficial MangaVerse</text>
+    <text x="400" y="560" text-anchor="middle" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="14">Tradução em Português · Scan Oficial NipponBR</text>
     <text x="400" y="590" text-anchor="middle" fill="#64748b" font-family="system-ui, sans-serif" font-size="12">Alta Definição Digital 2.0</text>
 
     <!-- Scanlator Box Panel -->
@@ -2228,7 +2228,7 @@ const app = new ShimApp();
   <!-- Bottom Page Marker -->
   <line x1="45" y1="1140" x2="755" y2="1140" stroke="#2D3346" stroke-width="1"/>
   <text x="400" y="1165" text-anchor="middle" fill="#64748b" font-family="system-ui, sans-serif" font-size="11" font-weight="500">
-    ${title} · Capítulo ${chapterNum} · Página ${pageNum} de ${totalPages} · MangaVerse BR
+    ${title} · Capítulo ${chapterNum} · Página ${pageNum} de ${totalPages} · NipponBR
   </text>
 </svg>`;
 
@@ -2247,7 +2247,7 @@ const app = new ShimApp();
     try {
       const url = 'https://api.mangadex.org/chapter?translatedLanguage[]=pt-br&order[publishAt]=desc&limit=25&includes[]=manga&includes[]=scanlation_group&includeExternalUrl=0';
       const r = await fetch(url, {
-        headers: { 'User-Agent': 'MangaVerse-App/2.0' },
+        headers: { 'User-Agent': 'NipponBR-App/2.0' },
         signal: AbortSignal.timeout(6000)
       }).then(res => res.json()).catch(() => null);
 
@@ -2350,7 +2350,7 @@ const app = new ShimApp();
 
       if (!r.ok) {
         // If origin returned non-200, fallback to digital canvas page so reader never fails
-        return res.redirect('/api/manga/page-canvas?page=1&title=MangaVerse');
+        return res.redirect('/api/manga/page-canvas?page=1&title=NipponBR');
       }
 
       const contentType = r.headers.get('content-type') || 'image/jpeg';
@@ -2370,7 +2370,7 @@ const app = new ShimApp();
       return res.send(buffer);
     } catch (err) {
       // In case of network timeout or proxy failure, serve fallback canvas page
-      return res.redirect('/api/manga/page-canvas?page=1&title=MangaVerse');
+      return res.redirect('/api/manga/page-canvas?page=1&title=NipponBR');
     }
   });
 
@@ -2379,7 +2379,7 @@ export async function handleMangaverseApi(request: Request): Promise<Response> {
   try {
     return await app.handle(request);
   } catch (error) {
-    console.error('MangaVerse API request failed:', error);
+    console.error('NipponBR API request failed:', error);
     return Response.json({ error: 'Não foi possível acessar os capítulos salvos. Tente novamente.' }, { status: 503 });
   }
 }

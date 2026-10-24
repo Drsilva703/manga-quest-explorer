@@ -29,7 +29,7 @@ export const AdPlaceholder: React.FC<AdPlaceholderProps> = ({ type, onOpenSuppor
                   Espaço Publicitário
                 </span>
                 <p className="text-sm font-medium text-zinc-200">
-                  Ajude a manter os servidores do MangaVerse velozes e sem custos.
+                  Ajude a manter os servidores do NipponBR velozes e sem custos.
                 </p>
               </div>
             </div>
@@ -60,7 +60,7 @@ export const AdPlaceholder: React.FC<AdPlaceholderProps> = ({ type, onOpenSuppor
             <Sparkles className="w-6 h-6" />
           </div>
           <h4 className="text-sm font-semibold text-zinc-200 mb-1">
-            Gosta de ler no MangaVerse?
+            Gosta de ler no NipponBR?
           </h4>
           <p className="text-xs text-zinc-400 mb-4 max-w-[240px]">
             Leitura rápida em alta definição, sem anúncios invasivos.

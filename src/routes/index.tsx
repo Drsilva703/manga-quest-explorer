@@ -4,17 +4,17 @@ import App from "../mangaverse/App";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "MangaVerse — Leia mangás, manhwas e manhuas em português" },
+      { title: "NipponBR — Animes e mangás em português" },
       {
         name: "description",
         content:
-          "MangaVerse: seu universo de mangás. Leia capítulos em PT-BR, acompanhe atualizações, monte sua biblioteca e converse com a comunidade.",
+          "NipponBR: explore animes, leia mangás em PT-BR, acompanhe seus favoritos e converse com a comunidade.",
       },
-      { property: "og:title", content: "MangaVerse — Leia mangás em português" },
+      { property: "og:title", content: "NipponBR — Animes e mangás em português" },
       {
         property: "og:description",
         content:
-          "Leia mangás, manhwas e manhuas em PT-BR, acompanhe atualizações e monte sua biblioteca no MangaVerse.",
+          "Descubra animes, leia mangás em PT-BR e monte sua biblioteca no NipponBR.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

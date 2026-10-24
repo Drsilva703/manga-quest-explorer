@@ -1,5 +1,5 @@
 /**
- * Pix Helper for MangaVerse
+ * Pix Helper for NipponBR
  * Generates standard Banco Central do Brasil BR Code (EMV TLV) for "Pix Copia e Cola"
  * and real camera-scannable QR Codes for user donations.
  */
@@ -13,7 +13,7 @@ export interface PixPayloadOptions {
 }
 
 export const OFFICIAL_PIX_KEY = '4970bdb1-d6e0-4a23-9d06-365d1f89687c';
-export const DEFAULT_MERCHANT_NAME = 'MangaVerse Apoio';
+export const DEFAULT_MERCHANT_NAME = 'NipponBR Apoio';
 export const DEFAULT_MERCHANT_CITY = 'SAO PAULO';
 
 /**

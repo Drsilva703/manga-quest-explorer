@@ -22,9 +22,13 @@ import { ReaderView } from './views/ReaderView';
 import { LibraryView } from './views/LibraryView';
 import { UpdatesView } from './views/UpdatesView';
 import { ChatView } from './views/ChatView';
+import { AnimeView } from './views/AnimeView';
+import { AnimeDetailsView } from './views/AnimeDetailsView';
+import type { Anime } from './types/anime';
 
 export default function App() {
-  const [currentTab, setCurrentTab] = useState<'home' | 'search' | 'library' | 'updates' | 'chat'>('home');
+  const [currentTab, setCurrentTab] = useState<'home' | 'search' | 'anime' | 'library' | 'updates' | 'chat'>('home');
+  const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
   const [selectedManga, setSelectedManga] = useState<MangaItem | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -110,7 +114,7 @@ export default function App() {
             chapterNumber: chapterNumber || '1',
             title: `Capítulo ${chapterNumber || '1'}`,
             language: 'pt-br',
-            scanlationGroup: 'MangaVerse Digital',
+            scanlationGroup: 'NipponBR Digital',
             publishedAt: new Date().toISOString(),
             pagesCount: 16
           }
@@ -161,6 +165,7 @@ export default function App() {
   };
 
   const handleSelectManga = (manga: MangaItem) => {
+    setSelectedAnime(null);
     setSelectedManga(manga);
     setReadingSession(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -175,6 +180,7 @@ export default function App() {
   };
 
   const handleSearchSubmit = (query: string) => {
+    setSelectedAnime(null);
     setSearchQuery(query);
     setSelectedManga(null);
     setReadingSession(null);
@@ -211,6 +217,7 @@ export default function App() {
         onSelectTab={(tab) => {
           setCurrentTab(tab);
           setSelectedManga(null);
+          setSelectedAnime(null);
         }}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenSupport={() => setIsSupportOpen(true)}
@@ -222,7 +229,14 @@ export default function App() {
 
       {/* Main View Area */}
       <main className="flex-1 w-full pb-16 xl:pb-0">
-        {selectedManga ? (
+        {currentTab === 'anime' && !selectedManga && (
+          <div hidden={!!selectedAnime}>
+            <AnimeView onSelect={(anime) => { setSelectedAnime(anime); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
+          </div>
+        )}
+        {selectedAnime ? (
+          <AnimeDetailsView key={selectedAnime.id} anime={selectedAnime} onBack={() => setSelectedAnime(null)} />
+        ) : selectedManga ? (
           <DetailsView
             manga={selectedManga}
             onBack={handleBackFromDetails}
@@ -253,6 +267,8 @@ export default function App() {
 
             {currentTab === 'library' && (
               <LibraryView
+                onSelectAnime={(anime) => { setSelectedAnime(anime); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                onExploreAnime={() => setCurrentTab('anime')}
                 onSelectManga={handleSelectManga}
                 onReadChapter={handleReadChapter}
                 onOpenSettings={() => setIsSettingsOpen(true)}
@@ -279,7 +295,7 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      {!selectedManga && currentTab !== 'chat' && (
+      {!selectedManga && !selectedAnime && currentTab !== 'chat' && (
         <Footer
           onOpenSupport={() => setIsSupportOpen(true)}
           onOpenSettings={() => setIsSettingsOpen(true)}

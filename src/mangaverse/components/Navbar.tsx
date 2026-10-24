@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { BookOpen, Search, Bookmark, Bell, Heart, Settings, Compass, MessageSquare, Shield } from 'lucide-react';
+import { BookOpen, Search, Bookmark, Bell, Heart, Settings, Compass, MessageSquare, Shield, Tv } from 'lucide-react';
 import { getStoredLibrary } from '../services/storage';
 import { AdminUser } from '../types/manga';
 import { useAuth } from '../hooks/useAuth';
 
 interface NavbarProps {
-  currentTab: 'home' | 'search' | 'library' | 'updates' | 'chat';
-  onSelectTab: (tab: 'home' | 'search' | 'library' | 'updates' | 'chat') => void;
+  currentTab: 'home' | 'search' | 'anime' | 'library' | 'updates' | 'chat';
+  onSelectTab: (tab: 'home' | 'search' | 'anime' | 'library' | 'updates' | 'chat') => void;
   onOpenSettings: () => void;
   onOpenSupport: () => void;
   onSearchSubmit: (query: string) => void;
@@ -50,20 +50,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30 group-hover:scale-105 transition-transform shrink-0">
               <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div className="hidden min-[420px]:block">
+            <div>
               <div className="flex items-center gap-1">
                 <span className="text-base sm:text-lg font-black tracking-tight text-white group-hover:text-indigo-300 transition-colors">
-                  Manga<span className="text-indigo-400">Verse</span>
+                  Nippon<span className="text-indigo-400">BR</span>
                 </span>
               </div>
               <p className="hidden lg:block text-[10px] text-zinc-400 -mt-0.5">
-                Catálogo & Leitor de Mangás
+                Mangás, animes e novas histórias
               </p>
             </div>
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden xl:flex items-center gap-1 shrink-0 py-1">
+          <nav aria-label="Navegação principal" className="hidden xl:flex items-center gap-1 shrink-0 py-1">
             <button
               onClick={() => onSelectTab('home')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
@@ -82,7 +82,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                   : 'text-zinc-400 hover:text-white hover:bg-zinc-850'
               }`}
             >
-              Catálogo & Filtros
+              Mangás
+            </button>
+            <button onClick={() => onSelectTab('anime')} aria-current={currentTab === 'anime' ? 'page' : undefined}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'anime' ? 'text-white bg-indigo-600' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>
+              <Tv className="w-3.5 h-3.5" />Animes
             </button>
             <button
               onClick={() => onSelectTab('library')}
@@ -127,7 +131,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Search bar & Actions */}
           <div className="flex items-center gap-1 sm:gap-2 shrink min-w-0 justify-end">
             {/* Quick search input */}
-            <div className="relative w-[92px] sm:w-[160px] 2xl:w-[210px] shrink-0">
+            <div className="hidden min-[380px]:block relative w-[92px] sm:w-[160px] 2xl:w-[210px] shrink-0">
               <Search className="w-3 h-3 sm:w-3.5 sm:h-3.5 absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
               <input
                 type="text"
@@ -144,7 +148,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onOpenAdminModal}
                 className="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 shadow-sm shadow-amber-500/20"
-                title="Painel de Administração MangaVerse"
+                title="Painel de Administração NipponBR"
               >
                 <Shield className="w-3.5 h-3.5 text-amber-400" />
                 <span className="hidden 2xl:inline">Painel ADM</span>
@@ -237,6 +241,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span className="text-[10px] mt-0.5">Catálogo</span>
         </button>
 
+        <button onClick={() => onSelectTab('anime')} aria-current={currentTab === 'anime' ? 'page' : undefined}
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-lg ${currentTab === 'anime' ? 'text-indigo-400 font-bold' : 'text-zinc-400 hover:text-zinc-200'}`}>
+          <Tv className="w-5 h-5" /><span className="text-[10px] mt-0.5">Animes</span>
+        </button>
         <button
           onClick={() => onSelectTab('library')}
           className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-lg transition-colors relative ${

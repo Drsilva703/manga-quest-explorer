@@ -378,7 +378,7 @@ export async function downloadChapterToDevice(
   <PageCount>${pageUrls.length}</PageCount>
   <LanguageISO>pt-BR</LanguageISO>
   <Manga>Yes</Manga>
-  <ScanInformation>MangaVerse Scan Oficial</ScanInformation>
+  <ScanInformation>NipponBR Scan Oficial</ScanInformation>
 </ComicInfo>`;
   zip.file('ComicInfo.xml', comicInfo);
 

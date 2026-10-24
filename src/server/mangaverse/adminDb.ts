@@ -18,9 +18,9 @@ export interface PixAdminConfig {
 
 const DEFAULT_PIX_CONFIG: PixAdminConfig = {
   key: '4970bdb1-d6e0-4a23-9d06-365d1f89687c',
-  merchantName: 'MangaVerse Apoio',
+  merchantName: 'NipponBR Apoio',
   merchantCity: 'SAO PAULO',
-  description: 'Apoio aos servidores e acervo MangaVerse',
+  description: 'Apoio aos servidores e acervo NipponBR',
   suggestedAmounts: [5, 10, 25, 50],
   updatedAt: new Date().toISOString()
 };
@@ -67,7 +67,7 @@ const INITIAL_CHAT_MESSAGES: ChatMessage[] = [
     email: 'denilsonr703@gmail.com',
     role: 'admin',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    text: 'Sejam bem-vindos ao chat oficial do MangaVerse BR! Sintam-se à vontade para compartilhar recomendações e teorias dos capítulos.',
+    text: 'Sejam bem-vindos ao chat oficial do NipponBR! Sintam-se à vontade para compartilhar recomendações e teorias dos capítulos.',
     timestamp: new Date(Date.now() - 3600000 * 5).toISOString()
   },
   {

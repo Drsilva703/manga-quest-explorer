@@ -33,7 +33,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, onV
   const [customAmountInput, setCustomAmountInput] = useState<string>('');
   const [isCustomAmount, setIsCustomAmount] = useState<boolean>(false);
   const [pixKey, setPixKey] = useState<string>(OFFICIAL_PIX_KEY);
-  const [merchantName, setMerchantName] = useState<string>('MangaVerse Apoio');
+  const [merchantName, setMerchantName] = useState<string>('NipponBR Apoio');
 
   const settings = getStoredSettings();
   const [vipActive, setVipActive] = useState<boolean>(settings.hideAds);
@@ -125,7 +125,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, onV
           <div>
             <div className="flex items-center gap-2">
               <h3 id="support-modal-title" className="text-xl font-black tracking-tight text-white">
-                Apoie o MangaVerse
+                Apoie o NipponBR
               </h3>
               <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/30">
                 Pix Oficial
@@ -208,7 +208,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, onV
             <div className="p-2.5 bg-white rounded-2xl shrink-0 shadow-lg flex flex-col items-center justify-center border border-zinc-200">
               <img
                 src={qrCodeUrl}
-                alt="QR Code Pix Oficial MangaVerse"
+                alt="QR Code Pix Oficial NipponBR"
                 className="w-32 h-32 object-contain"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = 'none';
