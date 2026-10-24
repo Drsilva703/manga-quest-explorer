@@ -29,7 +29,7 @@ O repositório também inclui `bun.lock`: use `bun install --frozen-lockfile` pa
 
 ## Animes — Tenrai
 
-A aba **Animes** está disponível na navegação desktop e mobile. Ela inclui carrossel da temporada, populares, ranking, busca paginada e detalhes com sinopse, capa, nota, gêneros, estúdios, ano, trailer do YouTube e episódios paginados. O catálogo fornece títulos e datas dos episódios, sem transmissão dos episódios completos.
+A aba **Animes** está disponível na navegação desktop e mobile. Ela inclui carrossel da temporada, populares, ranking, busca paginada e detalhes com sinopse, capa, nota, gêneros, estúdios, ano, trailer do YouTube e episódios paginados. O botão **Assistir** abre um player MP4/HLS/embed usando inicialmente uma instância pública do AniVault, substituível por uma API própria compatível. Tenrai continua fornecendo apenas o catálogo. Consulte [configuração e limitações da reprodução](docs/anime-playback.md).
 
 As chamadas passam por `/api/anime`, no backend, sem necessidade de chave:
 

@@ -1,4 +1,5 @@
 import { AnimeImage } from "../components/AnimeImage";
+import { AnimeWatchDialog } from "../components/AnimeWatchDialog";
 import { useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Heart, Star, Tv } from "lucide-react";
@@ -35,6 +36,7 @@ export function AnimeDetailsView({ anime: initial, onBack }: { anime: Anime; onB
   const entry = useAnimeLibrary().find((item) => item.anime.id === anime.id);
   const [saveError, setSaveError] = useState("");
   const [trailerOpen, setTrailerOpen] = useState(false);
+  const [watchEpisode, setWatchEpisode] = useState<number | null>(null);
   const update = (patch: Parameters<typeof saveAnime>[1]) => {
     try {
       saveAnime(anime, patch);
@@ -195,7 +197,7 @@ export function AnimeDetailsView({ anime: initial, onBack }: { anime: Anime; onB
       <section>
         <h2 className="text-xl font-bold text-white mb-2">Episódios</h2>
         <p className="text-xs text-zinc-500 mb-4">
-          Títulos e datas de exibição. O NipponBR não transmite episódios completos.
+          Selecione Assistir para buscar uma versão disponível e abrir o player.
         </p>
         {episodes.isPending && (
           <p role="status" className="text-indigo-300 text-sm py-4">
@@ -229,6 +231,13 @@ export function AnimeDetailsView({ anime: initial, onBack }: { anime: Anime; onB
                 <p className="mt-1 text-xs text-zinc-500">{airedDate(episode.aired)}</p>
               </div>
               <button
+                onClick={() => setWatchEpisode(episode.id)}
+                aria-label={`Assistir episódio ${episode.id}`}
+                className="rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-2"
+              >
+                ▶ Assistir
+              </button>
+              <button
                 aria-pressed={(entry?.watchedEpisodes || 0) >= episode.id}
                 onClick={() =>
                   update({
@@ -256,6 +265,7 @@ export function AnimeDetailsView({ anime: initial, onBack }: { anime: Anime; onB
           </button>
         )}
       </section>
+      {watchEpisode !== null && <AnimeWatchDialog anime={anime} requestedEpisode={watchEpisode} onClose={() => setWatchEpisode(null)} onWatched={number => update({ status: "watching", watchedEpisodes: Math.max(entry?.watchedEpisodes || 0, number) })} />}
     </div>
   );
 }

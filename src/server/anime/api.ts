@@ -1,5 +1,6 @@
 import { normalizeAnime, normalizeEpisode, parsePage } from "../../lib/anime-normalize";
 import { handleAnimeCover } from "./cover";
+import { handleAnimeStreaming } from "./streaming";
 import { fetchWithTimeout } from "../../lib/fetch-with-timeout";
 import { animeCatalogPath, type AnimeCollection } from "../../lib/tenrai-paths";
 
@@ -93,6 +94,7 @@ export async function handleAnimeApi(request: Request): Promise<Response> {
       { status: 405, headers: { Allow: "GET" } },
     );
   const url = new URL(request.url);
+  if (/^\/api\/anime\/stream\//.test(url.pathname)) return handleAnimeStreaming(request);
   if (url.pathname === "/api/anime/cover") return handleAnimeCover(request);
   const match = url.pathname.match(/^\/api\/anime(?:\/([1-9]\d{0,8})(\/episodes)?)?\/?$/);
   if (!match) return Response.json({ error: "Rota de anime não encontrada." }, { status: 404 });

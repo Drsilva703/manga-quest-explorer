@@ -212,8 +212,7 @@ export function AnimeView({ onSelect }: { onSelect: (anime: Anime) => void }) {
         </>
       )}
       <p className="mt-10 text-xs text-zinc-500 text-center">
-        Dados do MyAnimeList via Tenrai · Informações, episódios e trailers oficiais. Os episódios
-        completos não são reproduzidos aqui.
+        Dados do MyAnimeList via Tenrai · Reprodução conforme disponibilidade das fontes.
       </p>
     </div>
   );
