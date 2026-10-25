@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { BookOpen, Search, Bookmark, Bell, Heart, Settings, Compass, MessageSquare, Shield, Tv } from 'lucide-react';
+import { BookOpen, Search, Bookmark, Bell, Heart, Settings, Compass, MessageSquare, Shield, BookText } from 'lucide-react';
 import { getStoredLibrary } from '../services/storage';
 import { AdminUser } from '../types/manga';
 import { useAuth } from '../hooks/useAuth';
 
 interface NavbarProps {
-  currentTab: 'home' | 'search' | 'anime' | 'library' | 'updates' | 'chat';
-  onSelectTab: (tab: 'home' | 'search' | 'anime' | 'library' | 'updates' | 'chat') => void;
+  currentTab: 'home' | 'search' | 'books' | 'library' | 'updates' | 'chat';
+  onSelectTab: (tab: 'home' | 'search' | 'books' | 'library' | 'updates' | 'chat') => void;
   onOpenSettings: () => void;
   onOpenSupport: () => void;
   onSearchSubmit: (query: string) => void;
@@ -33,7 +33,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && quickQuery.trim()) {
       onSearchSubmit(quickQuery.trim());
-      onSelectTab('search');
+      if (currentTab !== 'books') onSelectTab('search');
     }
   };
 
@@ -57,7 +57,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </div>
               <p className="hidden lg:block text-[10px] text-zinc-400 -mt-0.5">
-                Mangás, animes e novas histórias
+                Mangás, livros e novas histórias
               </p>
             </div>
           </div>
@@ -84,9 +84,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               Mangás
             </button>
-            <button onClick={() => onSelectTab('anime')} aria-current={currentTab === 'anime' ? 'page' : undefined}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'anime' ? 'text-white bg-indigo-600' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>
-              <Tv className="w-3.5 h-3.5" />Animes
+            <button onClick={() => onSelectTab('books')} aria-current={currentTab === 'books' ? 'page' : undefined}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap ${currentTab === 'books' ? 'text-white bg-indigo-600' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}>
+              <BookText className="w-3.5 h-3.5" />Livros
             </button>
             <button
               onClick={() => onSelectTab('library')}
@@ -135,7 +135,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Search className="w-3 h-3 sm:w-3.5 sm:h-3.5 absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
               <input
                 type="text"
-                placeholder="Buscar..."
+                placeholder={currentTab === 'books' ? "Buscar livros..." : "Buscar..."}
                 value={quickQuery}
                 onChange={(e) => setQuickQuery(e.target.value)}
                 onKeyDown={handleSearchKeyDown}
@@ -241,9 +241,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span className="text-[10px] mt-0.5">Catálogo</span>
         </button>
 
-        <button onClick={() => onSelectTab('anime')} aria-current={currentTab === 'anime' ? 'page' : undefined}
-          className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-lg ${currentTab === 'anime' ? 'text-indigo-400 font-bold' : 'text-zinc-400 hover:text-zinc-200'}`}>
-          <Tv className="w-5 h-5" /><span className="text-[10px] mt-0.5">Animes</span>
+        <button onClick={() => onSelectTab('books')} aria-current={currentTab === 'books' ? 'page' : undefined}
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-lg ${currentTab === 'books' ? 'text-indigo-400 font-bold' : 'text-zinc-400 hover:text-zinc-200'}`}>
+          <BookText className="w-5 h-5" /><span className="text-[10px] mt-0.5">Livros</span>
         </button>
         <button
           onClick={() => onSelectTab('library')}

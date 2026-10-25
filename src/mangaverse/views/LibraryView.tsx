@@ -23,8 +23,6 @@ import {
 } from 'lucide-react';
 import { UserLibraryItem, ReadingStatus, MangaItem } from '../types/manga';
 import { MangaCard } from '../components/MangaCard';
-import { AnimeLibrary } from '../components/AnimeLibrary';
-import type { Anime } from '../types/anime';
 import {
   getStoredLibrary,
   removeLibraryItem,
@@ -46,8 +44,6 @@ import {
 } from '../services/reviewService';
 
 interface LibraryViewProps {
-  onSelectAnime: (anime: Anime) => void;
-  onExploreAnime: () => void;
   onSelectManga: (manga: MangaItem) => void;
   onReadChapter: (manga: MangaItem, chapterNumber?: string) => void;
   onOpenSettings: () => void;
@@ -57,8 +53,6 @@ interface LibraryViewProps {
 type LibraryTab = 'all' | ReadingStatus | 'favorites' | 'offline' | 'reviews';
 
 export const LibraryView: React.FC<LibraryViewProps> = ({
-  onSelectAnime,
-  onExploreAnime,
   onSelectManga,
   onReadChapter,
   onOpenSettings,
@@ -227,7 +221,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
             <span>Minha Biblioteca</span>
           </h2>
           <p className="text-xs text-zinc-400 mt-1">
-            Organize seus animes, mangás, capítulos offline e avaliações pessoais
+            Organize seus mangás, capítulos offline e avaliações pessoais
           </p>
         </div>
 
@@ -252,7 +246,6 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
         </div>
       </div>
 
-      <AnimeLibrary onSelect={onSelectAnime} onExplore={onExploreAnime} />
       <h2 className="text-lg font-bold text-white mb-4">Meus mangás</h2>
       {/* Tabs and Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">

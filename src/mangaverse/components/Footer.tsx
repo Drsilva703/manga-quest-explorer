@@ -21,7 +21,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenSupport, onOpenSettings })
             </span>
           </div>
           <p className="text-xs text-zinc-400 max-w-md">
-            Seu universo de animes, mangás, manhwas e quadrinhos digitais.
+            Seu universo de livros, mangás, manhwas e quadrinhos digitais.
             Prioridade total para traduções em português brasileiro (PT-BR) com alta definição.
           </p>
           <div className="flex items-center justify-center md:justify-start gap-2 text-[11px] text-zinc-400">

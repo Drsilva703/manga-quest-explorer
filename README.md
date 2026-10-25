@@ -1,6 +1,6 @@
 # NipponBR
 
-Mangás em português e descoberta de animes, com biblioteca pessoal e acompanhamento de episódios.
+Mangás em português e descoberta de livros, com busca por título ou autor e biblioteca pessoal de mangás.
 
 This project was built with [Lovable](https://lovable.dev).
 
@@ -27,25 +27,17 @@ npm run dev
 
 O repositório também inclui `bun.lock`: use `bun install --frozen-lockfile` para instalar as versões fixadas sem alterar o lockfile. Valide com `npm test`, `npx tsc --noEmit` e `npm run build`.
 
-## Animes — Tenrai
+## Livros — Google Books e Open Library
 
-A aba **Animes** está disponível na navegação desktop e mobile. Ela inclui carrossel da temporada, populares, ranking, busca paginada e detalhes com sinopse, capa, nota, gêneros, estúdios, ano, trailer do YouTube e episódios paginados. O botão **Assistir** abre um player MP4/HLS/embed usando inicialmente uma instância pública do AniVault, substituível por uma API própria compatível. Tenrai continua fornecendo apenas o catálogo. Consulte [configuração e limitações da reprodução](docs/anime-playback.md).
+A aba **Livros** substitui a antiga aba Animes no desktop e no celular. Use o campo de título/autor, as sugestões de busca ou a busca rápida da barra superior enquanto estiver na aba Livros. Os resultados aparecem em uma grade responsiva; abra um card para consultar autores, sinopse, ISBN e a fonte da edição.
 
-As chamadas passam por `/api/anime`, no backend, sem necessidade de chave:
+1. O serviço `src/mangaverse/services/bookService.ts` consulta `https://www.googleapis.com/books/v1/volumes?q=...`.
+2. Se a chamada falhar ou não encontrar livros, consulta automaticamente `https://openlibrary.org/search.json?q=...`.
+3. As capas Open Library usam `https://covers.openlibrary.org/b/id/{cover_i}-M.jpg`. Capas Google HTTP são convertidas para HTTPS. Ausências e falhas usam `/book-placeholder.svg`.
+4. A interface distingue carregamento, busca sem resultados e indisponibilidade das fontes, com opção de tentar novamente. Consultas antigas são canceladas ao mudar a busca ou sair da aba.
 
-| Funcionalidade | Tenrai |
-| --- | --- |
-| Busca | `/v1/anime?q=...` |
-| Temporada atual | `/v1/seasons/now` |
-| Populares | `/v1/top/anime?filter=bypopularity` |
-| Ranking | `/v1/top/anime` |
-| Detalhes | `/v1/anime/{id}` |
-| Episódios | `/v1/anime/{id}/episodes?page=...` |
+As buscas públicas funcionam sem chave obrigatória. Opcionalmente, `searchBooks` recebe `apiKey`, que adiciona o parâmetro `key` do Google Books. A interface lê `VITE_GOOGLE_BOOKS_API_KEY` se configurada. Como variáveis `VITE_` são públicas no navegador, use apenas uma chave própria para uso público, com restrições por domínio e API no Google Cloud; não coloque uma chave confidencial ali. Não é necessária para o fluxo padrão, e a Open Library nunca recebe essa chave.
 
-O backend valida as respostas, mantém cache de cinco minutos, revalida com ETag e respeita `Retry-After` em respostas 429. Se a conexão ao backend falhar ou ele retornar HTTP 5xx, o navegador consulta diretamente a mesma API pública da Tenrai, que oferece CORS aberto e não exige credenciais. Ambas as rotas usam os mesmos endpoints e a mesma validação de dados. Erros 400, 404 e 429 do backend não acionam essa alternativa.
+São solicitados os campos de ISBN explicitamente na Open Library, pois eles podem não vir na resposta padrão. Essa busca não oferece sinopse no contrato usado: nesses casos a interface informa “Sinopse não disponível nesta fonte”. O catálogo não fornece arquivos completos dos livros. Os dados antigos de mangás e animes no navegador não são apagados; a seção de animes não está mais acessível pela navegação.
 
-As consultas de cada instância e as consultas diretas do navegador são espaçadas para respeitar os limites públicos de 4/s e 120/min por IP; várias instâncias no mesmo IP podem compartilhar a cota. Falhas da API aparecem com opção de tentar novamente, sem títulos inventados. Falhas inesperadas do backend são registradas nos logs com o prefixo `[Tenrai]`.
-
-Favoritos, status (assistindo, quero assistir, concluído e abandonado) e progresso ficam na seção **Meus animes**, dentro da biblioteca. São salvos **neste navegador**, sem sincronização entre aparelhos. As chaves antigas de armazenamento de mangás foram preservadas durante a mudança de marca.
-
-Em ambientes com rede restrita, libere `api.tenrai.org`, `cdn.myanimelist.net` (capas) e `www.youtube-nocookie.com` (trailer). O player do YouTube pode carregar recursos de outros domínios do próprio YouTube. Dados do MyAnimeList, fornecidos pela [Tenrai](https://api.tenrai.org/llms.txt), uma API não oficial em beta.
+Em ambientes com rede restrita, permita `www.googleapis.com`, `books.google.com`, `openlibrary.org` e `covers.openlibrary.org`. Testes: `npm test`; tipos: `npx tsc --noEmit`; build: `npm run build`.

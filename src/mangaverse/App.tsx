@@ -22,13 +22,11 @@ import { ReaderView } from './views/ReaderView';
 import { LibraryView } from './views/LibraryView';
 import { UpdatesView } from './views/UpdatesView';
 import { ChatView } from './views/ChatView';
-import { AnimeView } from './views/AnimeView';
-import { AnimeDetailsView } from './views/AnimeDetailsView';
-import type { Anime } from './types/anime';
+import { BooksView } from './views/BooksView';
 
 export default function App() {
-  const [currentTab, setCurrentTab] = useState<'home' | 'search' | 'anime' | 'library' | 'updates' | 'chat'>('home');
-  const [selectedAnime, setSelectedAnime] = useState<Anime | null>(null);
+  const [currentTab, setCurrentTab] = useState<'home' | 'search' | 'books' | 'library' | 'updates' | 'chat'>('home');
+  const [booksQuery, setBooksQuery] = useState('');
   const [selectedManga, setSelectedManga] = useState<MangaItem | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -165,7 +163,6 @@ export default function App() {
   };
 
   const handleSelectManga = (manga: MangaItem) => {
-    setSelectedAnime(null);
     setSelectedManga(manga);
     setReadingSession(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -180,7 +177,7 @@ export default function App() {
   };
 
   const handleSearchSubmit = (query: string) => {
-    setSelectedAnime(null);
+    if (currentTab === 'books') { setBooksQuery(query.trim()); return; }
     setSearchQuery(query);
     setSelectedManga(null);
     setReadingSession(null);
@@ -217,7 +214,6 @@ export default function App() {
         onSelectTab={(tab) => {
           setCurrentTab(tab);
           setSelectedManga(null);
-          setSelectedAnime(null);
         }}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenSupport={() => setIsSupportOpen(true)}
@@ -229,14 +225,7 @@ export default function App() {
 
       {/* Main View Area */}
       <main className="flex-1 w-full pb-16 xl:pb-0">
-        {currentTab === 'anime' && !selectedManga && (
-          <div hidden={!!selectedAnime}>
-            <AnimeView onSelect={(anime) => { setSelectedAnime(anime); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
-          </div>
-        )}
-        {selectedAnime ? (
-          <AnimeDetailsView key={selectedAnime.id} anime={selectedAnime} onBack={() => setSelectedAnime(null)} />
-        ) : selectedManga ? (
+        {selectedManga ? (
           <DetailsView
             manga={selectedManga}
             onBack={handleBackFromDetails}
@@ -249,6 +238,7 @@ export default function App() {
           />
         ) : (
           <>
+            {currentTab === 'books' && <BooksView key={booksQuery} query={booksQuery} onSearch={setBooksQuery} />}
             {currentTab === 'home' && (
               <HomeView
                 onSelectManga={handleSelectManga}
@@ -267,8 +257,6 @@ export default function App() {
 
             {currentTab === 'library' && (
               <LibraryView
-                onSelectAnime={(anime) => { setSelectedAnime(anime); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                onExploreAnime={() => setCurrentTab('anime')}
                 onSelectManga={handleSelectManga}
                 onReadChapter={handleReadChapter}
                 onOpenSettings={() => setIsSettingsOpen(true)}
@@ -295,7 +283,7 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      {!selectedManga && !selectedAnime && currentTab !== 'chat' && (
+      {!selectedManga && currentTab !== 'chat' && (
         <Footer
           onOpenSupport={() => setIsSupportOpen(true)}
           onOpenSettings={() => setIsSettingsOpen(true)}
