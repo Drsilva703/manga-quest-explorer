@@ -1,10 +1,20 @@
+import { useState } from "react";
 import type { Book } from "../types/book";
 
 export function BookCover({ book, className = "" }: { book: Book; className?: string }) {
+  const candidates = [
+    ...new Set(
+      [...(book.coverUrls || []), book.coverUrl, "/book-placeholder.svg"].filter(
+        (url): url is string => !!url,
+      ),
+    ),
+  ];
+  const [failed, setFailed] = useState<string[]>([]);
+  const src = candidates.find((url) => !failed.includes(url)) || "/book-placeholder.svg";
   return (
     <img
-      key={book.coverUrl || book.id}
-      src={book.coverUrl || "/book-placeholder.svg"}
+      key={src}
+      src={src}
       alt={`Capa de ${book.title}`}
       loading="lazy"
       referrerPolicy="no-referrer"
@@ -16,10 +26,8 @@ export function BookCover({ book, className = "" }: { book: Book; className?: st
       }}
       onError={(event) => {
         const image = event.currentTarget;
-        if (!image.dataset.fallback) {
-          image.dataset.fallback = "true";
-          image.src = "/book-placeholder.svg";
-        }
+        if (image.getAttribute("src") !== "/book-placeholder.svg")
+          setFailed((value) => [...value, src]);
       }}
     />
   );

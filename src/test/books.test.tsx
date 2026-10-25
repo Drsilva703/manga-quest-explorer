@@ -90,7 +90,7 @@ describe("book API fallback", () => {
         fallbackReason: failure === "empty" ? "empty" : "error",
         books: [
           {
-            coverUrl: "https://covers.openlibrary.org/b/id/42-M.jpg",
+            coverUrl: "https://covers.openlibrary.org/b/id/42-L.jpg",
             authors: ["Machado de Assis"],
             identifiers: [{ identifier: "9788535914849" }],
           },
@@ -158,7 +158,9 @@ describe("books interface", () => {
     fireEvent.click(screen.getByRole("button", { name: "Ver detalhes de Livro sem capa" }));
     expect(screen.getByRole("dialog")).toHaveTextContent("Autor não informado");
     expect(screen.getByRole("dialog")).toHaveTextContent("Não informado");
-    expect(screen.getByRole("dialog")).toHaveTextContent("Sinopse não disponível nesta fonte.");
+    expect(
+      await screen.findByText("Sinopse não disponível nas fontes consultadas."),
+    ).toBeInTheDocument();
   });
   it("shows an empty state after both providers return no results", async () => {
     const fetch = vi

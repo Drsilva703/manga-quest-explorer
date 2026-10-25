@@ -238,7 +238,7 @@ export default function App() {
           />
         ) : (
           <>
-            {currentTab === 'books' && <BooksView key={booksQuery} query={booksQuery} onSearch={setBooksQuery} />}
+            {currentTab === 'books' && <BooksView query={booksQuery} onSearch={setBooksQuery} />}
             {currentTab === 'home' && (
               <HomeView
                 onSelectManga={handleSelectManga}

@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, BookText, Search, ArrowRight } from "lucide-react";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { BookDetailsDialog } from "../components/BookDetailsDialog";
 import { searchBooks } from "../services/bookService";
 import { BookCover } from "../components/BookCover";
 import type { Book } from "../types/book";
@@ -18,10 +18,12 @@ export function BooksView({
 }) {
   const [input, setInput] = useState(query);
   const [selected, setSelected] = useState<Book | null>(null);
+  const [freeOnly, setFreeOnly] = useState(false);
+  useEffect(() => setInput(query), [query]);
   const result = useQuery({
-    queryKey: ["books", query.trim()],
+    queryKey: ["books", query.trim(), freeOnly],
     queryFn: ({ signal }) =>
-      searchBooks(query, { signal, apiKey: import.meta.env.VITE_GOOGLE_BOOKS_API_KEY }),
+      searchBooks(query, { signal, apiKey: import.meta.env.VITE_GOOGLE_BOOKS_API_KEY, freeOnly }),
     enabled: !!query.trim(),
     staleTime: 5 * 60_000,
     retry: false,
@@ -91,6 +93,18 @@ export function BooksView({
           </button>
         ))}
       </div>
+      <label className="inline-flex items-center gap-3 mb-7 text-sm text-zinc-300 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={freeOnly}
+          onChange={(event) => {
+            setFreeOnly(event.target.checked);
+            setSelected(null);
+          }}
+          className="accent-indigo-500 h-4 w-4"
+        />
+        Somente livros com leitura gratuita
+      </label>
       {!query.trim() && (
         <section className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-gradient-to-br from-indigo-950/60 via-zinc-900 to-zinc-950 p-7 sm:p-12">
           <BookOpen
@@ -193,60 +207,12 @@ export function BooksView({
         </>
       )}
       <p className="mt-10 text-xs text-zinc-500 text-center">
-        Catálogo: Google Books e Open Library · Informações e disponibilidade de capas variam por
+        Catálogo: Google Books e Open Library · Leitura completa, prévia e empréstimo dependem da
         edição.
       </p>
-      <Dialog
-        open={!!selected}
-        onOpenChange={(open) => {
-          if (!open) setSelected(null);
-        }}
-      >
-        {selected && (
-          <DialogContent className="w-[calc(100%-1rem)] max-w-3xl max-h-[90dvh] overflow-y-auto bg-zinc-950 border-zinc-800 text-zinc-100 rounded-2xl">
-            <div className="flex flex-col sm:flex-row gap-6">
-              <BookCover
-                book={selected}
-                className="w-32 sm:w-44 aspect-[2/3] object-cover self-center sm:self-start rounded-xl shrink-0"
-              />
-              <div className="min-w-0 flex-1 pr-5">
-                <p className="text-xs text-indigo-300 font-bold tracking-widest mb-2">
-                  {sourceName(selected.source)}
-                </p>
-                <DialogTitle className="text-xl sm:text-2xl leading-tight">
-                  {selected.title}
-                </DialogTitle>
-                <DialogDescription className="text-sm text-zinc-400 mt-3">
-                  {selected.authors.join(", ") || "Autor não informado"}
-                </DialogDescription>
-                <dl className="mt-5 text-xs text-zinc-400 space-y-2">
-                  {selected.identifiers.length ? (
-                    selected.identifiers.map((identifier) => (
-                      <div key={`${identifier.type}:${identifier.identifier}`}>
-                        <dt className="font-semibold text-zinc-300">
-                          {identifier.type.replace("_", " ")}
-                        </dt>
-                        <dd className="break-all font-mono mt-1">{identifier.identifier}</dd>
-                      </div>
-                    ))
-                  ) : (
-                    <div>
-                      <dt className="font-semibold text-zinc-300">ISBN</dt>
-                      <dd>Não informado</dd>
-                    </div>
-                  )}
-                </dl>
-              </div>
-            </div>
-            <section>
-              <h3 className="text-base font-bold text-white mb-2">Sinopse</h3>
-              <p className="text-sm leading-relaxed text-zinc-300 whitespace-pre-line">
-                {selected.description || "Sinopse não disponível nesta fonte."}
-              </p>
-            </section>
-          </DialogContent>
-        )}
-      </Dialog>
+      {selected && (
+        <BookDetailsDialog key={selected.id} book={selected} onClose={() => setSelected(null)} />
+      )}
     </div>
   );
 }

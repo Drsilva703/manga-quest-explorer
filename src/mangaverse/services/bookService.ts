@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { fetchWithTimeout } from "../../lib/fetch-with-timeout";
-import type { Book, BookSearchResult } from "../types/book";
+import type { Book, BookSearchResult, BookReadingOption } from "../types/book";
 
 const object = z.record(z.unknown());
 const text = (value: unknown) => (typeof value === "string" ? value.trim() : "");
@@ -10,7 +10,7 @@ const names = (value: unknown) =>
     : [];
 
 // Cover links returned by Google sometimes use HTTP. Always upgrade to HTTPS.
-function coverUrl(value: unknown): string | null {
+export function safeBookUrl(value: unknown): string | null {
   if (typeof value !== "string") return null;
   try {
     const url = new URL(value);
@@ -22,7 +22,7 @@ function coverUrl(value: unknown): string | null {
 }
 
 // Keep API descriptions as plain text: no remote HTML is inserted into the DOM.
-function description(value: unknown): string {
+export function plainBookDescription(value: unknown): string {
   return text(value)
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
     .replace(/<[^>]*>/g, " ")
@@ -34,6 +34,24 @@ function description(value: unknown): string {
     .replace(/&#39;/g, "'")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+export function googleReadingOptions(value: unknown): BookReadingOption[] {
+  const item = object.parse(value);
+  const access = object.safeParse(item.accessInfo);
+  if (!access.success || !["ALL_PAGES", "PARTIAL"].includes(text(access.data.viewability)))
+    return [];
+  const url = safeBookUrl(access.data.webReaderLink);
+  if (
+    !url ||
+    !["books.google.com", "books.google.com.br", "play.google.com"].includes(new URL(url).hostname)
+  )
+    return [];
+  const embedUrl =
+    access.data.embeddable === true && text(item.id)
+      ? `https://books.google.com/books?${new URLSearchParams({ id: text(item.id), printsec: "frontcover", output: "embed" })}`
+      : undefined;
+  return [{ kind: access.data.viewability === "ALL_PAGES" ? "full" : "preview", url, embedUrl }];
 }
 
 export function parseGoogleBooks(value: unknown): Book[] {
@@ -58,13 +76,26 @@ export function parseGoogleBooks(value: unknown): Book[] {
             : [];
         })
       : [];
+    const image = images.success ? images.data : {};
+    const highRes = safeBookUrl(image.extraLarge || image.large || image.medium || image.small);
+    const thumbnail = safeBookUrl(image.thumbnail);
+    const isbn = identifiers.find(
+      (item) => /^ISBN/.test(item.type) && /^\d{9}[\dXx]$|^\d{13}$/.test(item.identifier),
+    )?.identifier;
+    const covers = [
+      highRes,
+      isbn ? `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg?default=false` : null,
+      thumbnail,
+    ].filter((url): url is string => !!url);
     return [
       {
         id: `google:${text(item.id)}`,
         title: text(info.data.title),
         authors: names(info.data.authors),
-        description: description(info.data.description),
-        coverUrl: coverUrl(images.success ? images.data.thumbnail : null),
+        description: plainBookDescription(info.data.description),
+        coverUrl: highRes || thumbnail,
+        coverUrls: [...new Set(covers)],
+        readingOptions: googleReadingOptions(item),
         identifiers,
         source: "google" as const,
       },
@@ -84,7 +115,13 @@ export function parseOpenLibrary(value: unknown): Book[] {
         title: text(item.title),
         authors: names(item.author_name),
         description: "",
-        coverUrl: cover.success ? `https://covers.openlibrary.org/b/id/${cover.data}-M.jpg` : null,
+        coverUrl: cover.success ? `https://covers.openlibrary.org/b/id/${cover.data}-L.jpg` : null,
+        workKey: /^\/works\/OL\d+W$/.test(text(item.key)) ? text(item.key) : undefined,
+        editionKey: names(item.edition_key).find((key) => /^OL\d+M$/.test(key)),
+        editionKeys: names(item.edition_key)
+          .filter((key) => /^OL\d+M$/.test(key))
+          .slice(0, 4),
+        publicAccessHint: item.ebook_access === "public",
         identifiers: isbn
           ? [{ type: isbn.length === 13 ? "ISBN_13" : "ISBN_10", identifier: isbn }]
           : [],
@@ -94,7 +131,7 @@ export function parseOpenLibrary(value: unknown): Book[] {
   });
 }
 
-async function json(url: string, signal?: AbortSignal): Promise<unknown> {
+export async function fetchBookJson(url: string, signal?: AbortSignal): Promise<unknown> {
   const response = await fetchWithTimeout(
     url,
     { signal, headers: { Accept: "application/json" }, credentials: "omit" },
@@ -107,7 +144,7 @@ async function json(url: string, signal?: AbortSignal): Promise<unknown> {
 /** Search Google first; consult only Open Library if it fails or has no books. */
 export async function searchBooks(
   query: string,
-  options: { signal?: AbortSignal; apiKey?: string } = {},
+  options: { signal?: AbortSignal; apiKey?: string; freeOnly?: boolean } = {},
 ): Promise<BookSearchResult> {
   const term = query.trim();
   if (!term || term.length > 200)
@@ -118,12 +155,13 @@ export async function searchBooks(
   };
   abortIfCancelled();
   const params = new URLSearchParams({ q: term, maxResults: "24", printType: "books" });
+  if (options.freeOnly) params.set("filter", "free-ebooks");
   // Optional browser-restricted Google Books key; basic public searches need none.
   if (options.apiKey?.trim()) params.set("key", options.apiKey.trim());
   let fallbackReason: "empty" | "error" = "empty";
   try {
     const books = parseGoogleBooks(
-      await json(`https://www.googleapis.com/books/v1/volumes?${params}`, signal),
+      await fetchBookJson(`https://www.googleapis.com/books/v1/volumes?${params}`, signal),
     );
     abortIfCancelled();
     if (books.length) return { books, source: "google" };
@@ -135,12 +173,12 @@ export async function searchBooks(
     abortIfCancelled();
     // Open Library's default fields may omit ISBN: request the needed fields explicitly.
     const fallback = new URLSearchParams({
-      q: term,
+      q: options.freeOnly ? `${term} ebook_access:public` : term,
       limit: "24",
-      fields: "key,title,author_name,cover_i,isbn",
+      fields: "key,title,author_name,cover_i,isbn,edition_key,ebook_access",
     });
     const books = parseOpenLibrary(
-      await json(`https://openlibrary.org/search.json?${fallback}`, signal),
+      await fetchBookJson(`https://openlibrary.org/search.json?${fallback}`, signal),
     );
     abortIfCancelled();
     return { books, source: "openlibrary", fallbackReason };
