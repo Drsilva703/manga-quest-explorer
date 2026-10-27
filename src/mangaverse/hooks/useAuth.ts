@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import type { User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-import { lovable } from '@/integrations/lovable/index';
+import { useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+import { startGoogleSignIn } from "@/mangaverse/services/googleAuth";
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -15,20 +15,26 @@ export function useAuth() {
   }, []);
 
   const signInWithGoogle = async () => {
-    const result = await lovable.auth.signInWithOAuth('google', {
-      redirect_uri: window.location.origin,
-    });
-    if (result.redirected) return;
-    if (result.error) {
-      console.error('Google sign-in error:', result.error);
-      const msg = String(result.error.message || '');
+    try {
+      await startGoogleSignIn();
+    } catch (error) {
+      console.error("Google sign-in error:", error);
+      const msg = error instanceof Error ? error.message : String(error);
       if (/cancel/i.test(msg)) return; // usuário fechou a janela
       if (/Popup was blocked/i.test(msg)) {
-        alert('O navegador bloqueou a janela de login. Permita pop-ups para este site e tente de novo.');
+        alert(
+          "O navegador bloqueou a janela de login. Permita pop-ups para este site e tente de novo.",
+        );
       } else if (/Preview mode|timed out/i.test(msg)) {
-        alert('O login com Google não funciona dentro da pré-visualização do editor no celular. Abra o site publicado (manga-quest-explorer.lovable.app) para entrar.');
+        alert(
+          "O login não foi concluído. Abra o site publicado em uma nova aba e tente novamente.",
+        );
+      } else if (/provider.*(disabled|not enabled)|unsupported provider/i.test(msg)) {
+        alert(
+          "Ative o provedor Google nas configurações de autenticação do Supabase deste projeto.",
+        );
       } else {
-        alert('Não foi possível entrar com o Google. Tente novamente.');
+        alert("Não foi possível entrar com o Google. Tente novamente.");
       }
     }
   };

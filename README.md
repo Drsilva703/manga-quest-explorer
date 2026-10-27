@@ -47,3 +47,17 @@ O filtro **Somente livros com leitura gratuita** usa `filter=free-ebooks` no Goo
 Verificação real: sinopse em português de Dom Casmurro na obra `OL1003040W`; capa grande com dimensões naturais de 333×500; leitura de uma edição pública associada à obra `OL43027352W`, com páginas efetivamente carregadas no BookReader. A qualidade máxima depende da imagem original fornecida. Os dados antigos de mangás e animes no navegador não são apagados; a seção de animes não está mais acessível pela navegação.
 
 Em ambientes com rede restrita, permita `www.googleapis.com`, `books.google.com`, `play.google.com`, `openlibrary.org`, `covers.openlibrary.org` e, para o leitor, `archive.org` e seus subdomínios de arquivos. Testes: `npm test`; tipos: `npx tsc --noEmit`; build: `npm run build`.
+
+## Login com Google na Vercel ou em domínio próprio
+
+O endpoint `/~oauth/initiate` pertence ao Lovable e não existe na Vercel. O site agora escolhe automaticamente o login direto do Supabase fora dos domínios Lovable. O retorno usa a rota `/`, já existente, e o cliente Supabase recupera a sessão automaticamente. Não adicione um rewrite para simular o endpoint do Lovable.
+
+No painel do **mesmo projeto Supabase** usado pelo site:
+
+1. Em **Authentication → Providers → Google**, habilite Google e configure o Client ID e o Client Secret do seu aplicativo OAuth no Google Cloud. O Secret fica somente no Supabase.
+2. No aplicativo OAuth do Google Cloud, em **Authorized redirect URIs**, adicione a URL de callback exibida pelo Supabase: `https://SEU-PROJETO.supabase.co/auth/v1/callback` (ou o callback exato do seu backend). Esse campo recebe o endereço do Supabase, não o da Vercel.
+3. Em **Authentication → URL Configuration**, defina **Site URL** como `https://SEU-SITE.vercel.app` e adicione `https://SEU-SITE.vercel.app/` em **Redirect URLs**. Cadastre também seu domínio próprio se houver. Autorize os endereços efetivamente usados; não libere todos os projetos `*.vercel.app`.
+4. Na Vercel, configure `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` com os valores públicos do mesmo projeto. Para as rotas de backend, configure também `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY`. Nunca use `service_role` ou Google Client Secret em variáveis `VITE_`.
+5. Faça um novo deploy e teste o login no endereço publicado. Opcionalmente, `VITE_AUTH_MODE=supabase` força o fluxo direto também em domínios próprios ligados ao Lovable. `VITE_AUTH_MODE=lovable` só deve ser usado onde o broker Lovable existe.
+
+Se estiver usando Lovable Cloud sem acesso às configurações OAuth do backend, será necessário configurar um projeto Supabase sob seu controle (incluindo a migração de tabelas e políticas antes de trocar as variáveis) ou obter acesso à configuração de autenticação do backend atual. Alterar o frontend não habilita um provedor Google desativado nem autoriza um domínio no painel externo.
